@@ -4,6 +4,7 @@
     { "src": "api/index.py", "use": "@vercel/python" }
   ],
   "routes": [
+    { "src": "/", "headers": { "cache-control": "no-store, max-age=0, must-revalidate" }, "dest": "api/index.py" },
     { "src": "/(.*)", "dest": "api/index.py" }
   ]
 }
