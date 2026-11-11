@@ -131,6 +131,12 @@
     <h2 class="section">Refund cases</h2>
     <div class="card"><div id="casesBox"><div class="empty">Loading…</div></div></div>
 
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:28px">
+      <h2 class="section" style="margin:0">Reconciliation &amp; discrepancies</h2>
+      <button class="ghost" id="importBtn">Import sample bank statement</button>
+    </div>
+    <div class="card" style="margin-top:12px"><div id="discBox"><div class="empty">Loading…</div></div></div>
+
     <h2 class="section">Trips</h2>
     <div class="card"><div id="tripsBox"><div class="empty">Loading…</div></div></div>
   </main>
@@ -205,8 +211,58 @@ async function boot(){
 
     const trips = await api("/trips");
     renderTrips(trips);
+
+    await renderDiscrepancies();
   }catch(err){ console.error(err); }
 }
+
+const SEV_CLASS = (s)=> s==="HIGH" ? "b-review" : s==="MEDIUM" ? "b-progress" : "b-expected";
+
+async function renderDiscrepancies(){
+  const discs = await api("/reconciliation/discrepancies").catch(()=>[]);
+  if(!discs.length){ $("discBox").innerHTML = `<div class="empty">No discrepancies — all imported records reconciled.</div>`; return; }
+  $("discBox").innerHTML = `
+    <table><thead><tr>
+      <th>Type</th><th>Severity</th><th class="num">Amount</th><th>Detail</th><th>Recommended action</th><th></th>
+    </tr></thead><tbody>
+    ${discs.map(d=>{
+      const amt = d.observed_amount || d.expected_amount || d.difference || "0.00";
+      return `<tr>
+        <td><b>${d.kind.replaceAll("_"," ")}</b></td>
+        <td><span class="badge ${SEV_CLASS(d.severity)}">${d.severity}</span></td>
+        <td class="num mono">${fmtINR(amt)}</td>
+        <td class="sim">${d.detail}</td>
+        <td class="sim">${d.recommended_action}</td>
+        <td class="num">${d.status==="OPEN"
+          ? `<button class="link-btn" onclick='resolveDisc(${JSON.stringify(d.id)})'>Resolve</button>`
+          : `<span class="badge b-done">${d.status}</span>`}</td>
+      </tr>`;
+    }).join("")}
+    </tbody></table>`;
+}
+
+async function resolveDisc(id){
+  await api(`/reconciliation/discrepancies/${id}/resolve`, {
+    method:"POST", body: JSON.stringify({status:"RESOLVED"})
+  }).catch(()=>{});
+  await renderDiscrepancies();
+  const s = await api("/dashboard/summary"); renderKpis(s);
+}
+
+$("importBtn").addEventListener("click", async ()=>{
+  const btn = $("importBtn"); btn.disabled = true; btn.textContent = "Importing…";
+  try{
+    await api("/reconciliation/import", { method:"POST", body: JSON.stringify({
+      source:"BANK", filename:"sample-bank.csv",
+      rows:[
+        {external_ref:"BANK-IDG-1", amount:"5000.00", value_date:"2026-03-01"},
+        {external_ref:"UPI-ADHOC-"+Date.now(), amount:"1800.00", value_date:"2026-03-09"},
+      ],
+    })});
+    await renderDiscrepancies();
+    const s = await api("/dashboard/summary"); renderKpis(s);
+  }finally{ btn.disabled=false; btn.textContent="Import sample bank statement"; }
+});
 
 function renderKpis(s){
   const cards = [
@@ -216,8 +272,8 @@ function renderKpis(s){
     {k:"Supplier refunds received", v:fmtINR(s.total_supplier_refund_received), cls:"accent-good"},
     {k:"Customer refunded", v:fmtINR(s.total_customer_refunded)},
     {k:"Outstanding from suppliers", v:fmtINR(s.total_outstanding), cls:"accent-out"},
-    {k:"Refund cases", v:s.total_refund_cases, raw:true},
     {k:"Cases with balance due", v:s.open_outstanding_cases, raw:true},
+    {k:"Open discrepancies", v:(s.open_discrepancies ?? 0), raw:true, cls:(s.open_discrepancies>0?"accent-out":"")},
   ];
   $("kpis").innerHTML = cards.map(c=>`
     <div class="kpi ${c.cls||""}">

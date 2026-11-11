@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.domain.money import Money
 from app.models.refund import LedgerEntryRow, RefundCase
+from app.models.reconciliation import Discrepancy
 from app.models.trip import Booking, Trip
 
 
@@ -69,6 +70,11 @@ def summary(db: Session, tenant_id: str, currency: str = "INR") -> dict:
         if outstanding > 0:
             open_cases += 1
 
+    open_discrepancies = db.scalar(
+        select(func.count()).select_from(Discrepancy).where(
+            Discrepancy.tenant_id == tenant_id, Discrepancy.status == "OPEN")
+    ) or 0
+
     return {
         "currency": currency,
         "total_trips": total_trips,
@@ -80,4 +86,5 @@ def summary(db: Session, tenant_id: str, currency: str = "INR") -> dict:
         "total_supplier_refund_received": _m(supplier_received),
         "total_customer_refunded": _m(abs(customer_paid)),
         "total_outstanding": _m(total_outstanding),
+        "open_discrepancies": open_discrepancies,
     }

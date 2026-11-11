@@ -16,7 +16,14 @@ from fastapi.responses import FileResponse
 from app.core.config import get_settings
 from app.core.database import Base, get_engine
 import app.models  # noqa: F401  -- registers all tables on Base.metadata
-from app.api.routes import auth, calculations, dashboard, refund_cases, trips
+from app.api.routes import (
+    auth,
+    calculations,
+    dashboard,
+    reconciliation,
+    refund_cases,
+    trips,
+)
 
 _WEB_DIR = Path(__file__).parent / "web"
 
@@ -45,6 +52,7 @@ app.include_router(auth.router, prefix=_V1)
 app.include_router(trips.router, prefix=_V1)
 app.include_router(refund_cases.router, prefix=_V1)
 app.include_router(dashboard.router, prefix=_V1)
+app.include_router(reconciliation.router, prefix=_V1)
 app.include_router(calculations.router, prefix=_V1)
 
 

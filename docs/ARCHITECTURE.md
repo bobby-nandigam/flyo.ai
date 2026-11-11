@@ -131,7 +131,7 @@ as immutable rows (append-only; no `UPDATE`/`DELETE` grant for the app role).
 |-------|-------|--------|
 | 1 | Architecture, domain model, financial invariants | ✅ **done** |
 | 2 | Auth/JWT + RBAC, tenants, trips/bookings, refund cases, ledger persistence, Alembic, demo seed | ✅ **done** |
-| 3 | CSV import, normalisation, deterministic matching, discrepancies | ⬜ planned |
+| 3 | CSV/JSON import, normalisation, deterministic matching + confidence, discrepancy detection & queue | ✅ **done** |
 | 4 | Document intake, OCR, extraction, human verification, policy engine | ⬜ planned |
 | 5 | AI investigation: retrieval, tool-calling, evidence-grounded answers, evals | ⬜ planned |
 | 6 | Next.js enterprise UI (15 screens) | ⬜ planned |
@@ -147,8 +147,18 @@ as immutable rows (append-only; no `UPDATE`/`DELETE` grant for the app role).
 - Alembic migration for all 9 tables; `scripts/seed_demo.py` loads the synthetic
   Indian scenarios (IndiGo settled, Taj partial/outstanding, Air India not received).
 
-No fake integrations are presented as real; unfinished modules (reconciliation,
-OCR, AI) are simply not wired into the router yet (spec §13).
+**Phase 3 — reconciliation (spec Modules E & G):** `domain/reconciliation.py` is a
+pure, reproducible matching engine: deterministic-first (exact ref → amount+date →
+booking ref → fuzzy), each strategy carrying a documented confidence, with
+low-confidence matches flagged non-auto-finalizable. It detects four discrepancy
+types (unmatched bank credit, missing supplier refund, amount mismatch, duplicate)
+with financial exposure. `POST /api/v1/reconciliation/import` accepts CSV text or
+JSON rows, matches them against the tenant's SUPPLIER ledger entries, and persists
+a batch + records (with match outcome) + a discrepancy queue (`GET
+/reconciliation/discrepancies`, sorted by exposure; `/resolve` to work them).
+
+No fake integrations are presented as real; unfinished modules (OCR, AI) are
+simply not wired into the router yet (spec §13).
 
 ### Tenant isolation, concretely
 

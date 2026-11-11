@@ -10,6 +10,11 @@ from app.models.trip import (
     Booking,
 )
 from app.models.refund import RefundCase, LedgerEntryRow, AuditLog
+from app.models.reconciliation import (
+    ReconciliationBatch,
+    ReconciliationRecord,
+    Discrepancy,
+)
 
 __all__ = [
     "Tenant",
@@ -25,4 +30,7 @@ __all__ = [
     "RefundCase",
     "LedgerEntryRow",
     "AuditLog",
+    "ReconciliationBatch",
+    "ReconciliationRecord",
+    "Discrepancy",
 ]

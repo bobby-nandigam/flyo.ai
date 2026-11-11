@@ -18,7 +18,12 @@ from app.core.database import Base, get_engine, get_sessionmaker
 import app.models  # noqa: F401
 from app.domain.refund_status import RefundStatus
 from app.models.trip import ServiceType, SupplierType
-from app.services import auth_service, refund_service, trip_service
+from app.services import (
+    auth_service,
+    reconciliation_service,
+    refund_service,
+    trip_service,
+)
 
 OWNER_EMAIL = "demo-owner@flyo.test"
 OWNER_PASSWORD = "demopassword1"
@@ -140,6 +145,19 @@ def seed() -> None:
         # No supplier refund posted -> full expected amount is outstanding/overdue.
         refund_service.transition_status(db, t, u, case_id=case3.id,
                                          new_status=RefundStatus.REFUND_REQUESTED)
+
+        # ================= Scenario 4: Reconcile an imported bank statement ========
+        # Mirrors the recorded supplier ledger refunds, with one shortfall and one
+        # unexplained credit, so the discrepancy queue has realistic items.
+        reconciliation_service.import_and_reconcile(
+            db, t, u, source="BANK", filename="hdfc-mar-2026.csv",
+            rows=[
+                {"external_ref": "BANK-IDG-1", "amount": "5000.00", "value_date": "2026-03-01"},
+                {"external_ref": "BANK-IDG-2", "amount": "4750.00", "value_date": "2026-03-04"},
+                {"external_ref": "BANK-TAJ-1", "amount": "6500.00", "value_date": "2026-03-06"},  # short by 500
+                {"external_ref": "UPI-MYSTERY-7", "amount": "3200.00", "value_date": "2026-03-07"},  # unexplained
+            ],
+        )
 
         print("Seed complete.")
         print(f"  Tenant:   {tenant.name}  ({tenant.id})")
