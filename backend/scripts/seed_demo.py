@@ -12,6 +12,8 @@ Then log in as  demo-owner@flyo.test / demopassword1  to explore the data.
 """
 from __future__ import annotations
 
+import uuid
+
 from app.core.database import Base, get_engine, get_sessionmaker
 import app.models  # noqa: F401
 from app.domain.refund_status import RefundStatus
@@ -20,6 +22,14 @@ from app.services import auth_service, refund_service, trip_service
 
 OWNER_EMAIL = "demo-owner@flyo.test"
 OWNER_PASSWORD = "demopassword1"
+
+# Deterministic IDs so every stateless serverless instance seeds identical
+# identifiers — a token issued by one instance then validates on all of them.
+_NS = uuid.UUID("f1a7e000-0000-4000-8000-000000000000")
+
+
+def _did(name: str) -> str:
+    return uuid.uuid5(_NS, name).hex
 
 
 def _ensure_schema() -> None:
@@ -49,6 +59,7 @@ def seed() -> None:
         tenant, owner = auth_service.register_organization(
             db, org_name="Himalaya Travels (DEMO)", email=OWNER_EMAIL,
             password=OWNER_PASSWORD, full_name="Demo Owner",
+            tenant_id=_did("tenant"), user_id=_did("user"),
         )
         t, u = tenant.id, owner.id
 
@@ -71,7 +82,7 @@ def seed() -> None:
                                       service_type=ServiceType.FLIGHT,
                                       original_amount="12500.00")
         case1 = refund_service.open_refund_case(
-            db, t, u, booking_id=b1.id,
+            db, t, u, booking_id=b1.id, case_id=_did("case1"),
             deductions=[
                 {"kind": "CANCELLATION_DEDUCTION", "label": "IndiGo cancellation fee",
                  "amount": "3000.00", "evidence_ref": "doc:indigo-cancel-AAA111"},
@@ -99,7 +110,7 @@ def seed() -> None:
                                       service_type=ServiceType.HOTEL,
                                       original_amount="22000.00")
         case2 = refund_service.open_refund_case(
-            db, t, u, booking_id=b2.id,
+            db, t, u, booking_id=b2.id, case_id=_did("case2"),
             deductions=[
                 {"kind": "CANCELLATION_DEDUCTION", "label": "One night retention",
                  "amount": "8000.00", "evidence_ref": "doc:taj-cancel-77421"},
@@ -120,7 +131,7 @@ def seed() -> None:
                                       service_type=ServiceType.FLIGHT,
                                       original_amount="18000.00")
         case3 = refund_service.open_refund_case(
-            db, t, u, booking_id=b3.id,
+            db, t, u, booking_id=b3.id, case_id=_did("case3"),
             deductions=[
                 {"kind": "CANCELLATION_DEDUCTION", "label": "Air India cancellation fee",
                  "amount": "4000.00", "evidence_ref": "doc:ai-cancel-ZZZ999"},

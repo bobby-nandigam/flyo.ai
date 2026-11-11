@@ -51,6 +51,7 @@ def open_refund_case(
     booking_id: str,
     deductions: Sequence[dict],
     customer_deductions: Sequence[dict] | None = None,
+    case_id: str | None = None,
 ) -> RefundCase:
     """Open a case and compute the expected supplier (and customer) refund.
 
@@ -81,6 +82,7 @@ def open_refund_case(
         customer_result = compute_customer_refund(cust_lines, currency)
 
     case = RefundCase(
+        **({"id": case_id} if case_id else {}),
         tenant_id=tenant_id,
         trip_id=booking.trip_id,
         booking_id=booking.id,

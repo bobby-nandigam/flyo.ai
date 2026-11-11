@@ -21,9 +21,15 @@ def _slugify(name: str) -> str:
 
 
 def register_organization(
-    db: Session, *, org_name: str, email: str, password: str, full_name: str = ""
+    db: Session, *, org_name: str, email: str, password: str, full_name: str = "",
+    tenant_id: str | None = None, user_id: str | None = None,
 ) -> tuple[Tenant, User]:
-    """Create a new tenant and its first OWNER user atomically."""
+    """Create a new tenant and its first OWNER user atomically.
+
+    ``tenant_id``/``user_id`` may be supplied to create records with stable,
+    deterministic identifiers (used by the demo seed so a token issued by one
+    stateless instance validates on every other instance).
+    """
     email = email.strip().lower()
     slug = _slugify(org_name)
     # Ensure slug uniqueness by suffixing if needed.
@@ -34,6 +40,8 @@ def register_organization(
         candidate = f"{slug}-{n}"
 
     tenant = Tenant(name=org_name, slug=candidate)
+    if tenant_id:
+        tenant.id = tenant_id
     db.add(tenant)
     db.flush()  # assign tenant.id
 
@@ -44,6 +52,8 @@ def register_organization(
         password_hash=hash_password(password),
         role=Role.OWNER,
     )
+    if user_id:
+        user.id = user_id
     db.add(user)
     db.flush()
     audit.record(
