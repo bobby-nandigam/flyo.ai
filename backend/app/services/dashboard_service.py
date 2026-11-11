@@ -61,7 +61,19 @@ def summary(db: Session, tenant_id: str, currency: str = "INR") -> dict:
     for r in rows:
         received_by_case[r.refund_case_id] = received_by_case.get(r.refund_case_id, 0) + r.amount_minor
 
-    total_outstanding = 0
+    # Customer payouts = per-case money paid to the customer (CUSTOMER account).
+    paid_by_case: dict[str, int] = {}
+    crows = db.scalars(
+        select(LedgerEntryRow).where(
+            LedgerEntryRow.tenant_id == tenant_id,
+            LedgerEntryRow.account == "CUSTOMER",
+        )
+    ).all()
+    for r in crows:
+        paid_by_case[r.refund_case_id] = paid_by_case.get(r.refund_case_id, 0) + r.amount_minor
+
+    total_outstanding = 0            # suppliers still owe the agency
+    total_owed_to_customers = 0      # agency received, not yet passed to customers
     open_cases = 0
     for c in cases:
         rec = received_by_case.get(c.id, 0)
@@ -69,6 +81,10 @@ def summary(db: Session, tenant_id: str, currency: str = "INR") -> dict:
         total_outstanding += outstanding
         if outstanding > 0:
             open_cases += 1
+        # Pass-through liability: money received from the supplier for this case
+        # that has not yet reached the customer.
+        paid_customer = abs(paid_by_case.get(c.id, 0))
+        total_owed_to_customers += max(rec - paid_customer, 0)
 
     open_discrepancies = db.scalar(
         select(func.count()).select_from(Discrepancy).where(
@@ -86,5 +102,6 @@ def summary(db: Session, tenant_id: str, currency: str = "INR") -> dict:
         "total_supplier_refund_received": _m(supplier_received),
         "total_customer_refunded": _m(abs(customer_paid)),
         "total_outstanding": _m(total_outstanding),
+        "total_owed_to_customers": _m(total_owed_to_customers),
         "open_discrepancies": open_discrepancies,
     }

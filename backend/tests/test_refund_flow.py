@@ -107,6 +107,21 @@ def test_supplier_and_customer_refunds_tracked_separately(client):
     assert accounts == {"SUPPLIER", "CUSTOMER"}
 
 
+def test_dashboard_tracks_money_owed_to_customers(client):
+    # Supplier pays agency 8000; agency passes only 7800 to the customer ->
+    # the agency still owes the customer 200, which the dashboard must surface.
+    h = auth_headers(register_org(client)["access_token"])
+    _, booking = _setup_booking(client, h)
+    case = client.post("/api/v1/refund-cases", json={"booking_id": booking["id"]}, headers=h).json()
+    cid = case["id"]
+    client.post(f"/api/v1/refund-cases/{cid}/supplier-refund", json={
+        "amount": "8000.00", "evidence_ref": "bank:s", "external_ref": "S1"}, headers=h)
+    client.post(f"/api/v1/refund-cases/{cid}/customer-refund", json={
+        "amount": "7800.00", "evidence_ref": "upi:c", "external_ref": "C1"}, headers=h)
+    summary = client.get("/api/v1/dashboard/summary", headers=h).json()
+    assert summary["total_owed_to_customers"] == "200.00"
+
+
 def test_illegal_status_transition_rejected(client):
     h = auth_headers(register_org(client)["access_token"])
     _, booking = _setup_booking(client, h)
