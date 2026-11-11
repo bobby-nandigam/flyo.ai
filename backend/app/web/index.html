@@ -6,87 +6,132 @@
 <title>TravelRefund Intelligence</title>
 <style>
   :root{
-    --bg:#f6f7f9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
-    --brand:#0b5fff; --brand-ink:#0a4fd6; --good:#0f9d58; --warn:#b7791f; --bad:#d64545;
-    --chip:#eef2ff; --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+    --bg:#f4f5f7; --panel:#ffffff; --sidebar:#0f1729; --sidebar-2:#1b2537;
+    --side-ink:#9aa6bd; --side-active:#ffffff;
+    --ink:#111827; --ink-2:#374151; --muted:#6b7280; --line:#e6e8ec; --line-2:#eef0f3;
+    --accent:#2563eb; --accent-ink:#1d4ed8; --accent-weak:#eef3ff;
+    --good:#047857; --good-weak:#ecfdf5; --warn:#b45309; --warn-weak:#fff7ed;
+    --bad:#b91c1c; --bad-weak:#fef2f2; --indigo:#4338ca; --indigo-weak:#eef2ff;
+    --radius:10px; --shadow:0 1px 2px rgba(17,24,39,.04), 0 1px 3px rgba(17,24,39,.06);
   }
   *{box-sizing:border-box}
-  body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  html,body{margin:0}
+  body{font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;
     color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
-  a{color:var(--brand);text-decoration:none}
-  .hidden{display:none !important}
   .mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .hidden{display:none !important}
+  button{font-family:inherit;cursor:pointer}
+  a{color:var(--accent);text-decoration:none}
 
   /* ---------- Login ---------- */
   .auth-wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
-  .auth-card{width:100%;max-width:400px;background:var(--panel);border:1px solid var(--line);
-    border-radius:14px;box-shadow:var(--shadow);padding:28px}
-  .brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
-  .brand .dot{width:28px;height:28px;border-radius:8px;background:var(--brand);
-    display:grid;place-items:center;color:#fff;font-weight:700}
-  .brand h1{font-size:16px;margin:0;letter-spacing:-.2px}
-  .tag{color:var(--muted);font-size:12px;margin:2px 0 22px}
-  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:14px 0 6px}
-  input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;background:#fff}
-  input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,95,255,.12)}
-  button.primary{width:100%;margin-top:20px;padding:11px;background:var(--brand);color:#fff;border:0;
-    border-radius:9px;font-weight:600;font-size:14px;cursor:pointer}
-  button.primary:hover{background:var(--brand-ink)}
-  button.primary:disabled{opacity:.6;cursor:default}
-  .err{background:#fef2f2;color:var(--bad);border:1px solid #f6d2d2;border-radius:8px;
+  .auth-card{width:100%;max-width:380px;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;box-shadow:var(--shadow);padding:30px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:30px;height:30px;border-radius:8px;background:var(--sidebar);display:grid;place-items:center;
+    color:#fff;font-weight:700;font-size:15px}
+  .auth-card h1{font-size:16px;margin:16px 0 2px;letter-spacing:-.2px}
+  .auth-card .tag{color:var(--muted);font-size:12.5px;margin-bottom:22px}
+  label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin:14px 0 6px}
+  input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;
+    font-size:13.5px;background:#fff;color:var(--ink);font-family:inherit}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-weak)}
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:8px;font-size:13px;
+    font-weight:600;border:1px solid transparent;background:var(--accent);color:#fff}
+  .btn:hover{background:var(--accent-ink)}
+  .btn:disabled{opacity:.55;cursor:default}
+  .btn.ghost{background:#fff;border-color:var(--line);color:var(--ink-2)}
+  .btn.ghost:hover{background:#f8fafc;border-color:#d7dbe2}
+  .btn.sm{padding:6px 10px;font-size:12px}
+  .btn.block{width:100%;justify-content:center;padding:11px}
+  .err{background:var(--bad-weak);color:var(--bad);border:1px solid #f3c9c9;border-radius:8px;
     padding:9px 11px;font-size:13px;margin-top:14px}
-  .hint{margin-top:18px;font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:14px}
-  .hint code{background:var(--chip);padding:2px 6px;border-radius:5px;color:var(--brand-ink)}
+  .hint{margin-top:18px;font-size:12px;color:var(--muted);border-top:1px solid var(--line-2);padding-top:14px}
+  .hint code{background:#f1f3f6;padding:2px 6px;border-radius:5px;color:var(--ink-2)}
 
-  /* ---------- App shell ---------- */
-  .topbar{display:flex;align-items:center;justify-content:space-between;background:var(--panel);
-    border-bottom:1px solid var(--line);padding:12px 22px;position:sticky;top:0;z-index:5}
-  .topbar .who{font-size:13px;color:var(--muted)}
-  .topbar .who b{color:var(--ink)}
-  .ghost{background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 12px;
-    font-size:13px;cursor:pointer;color:var(--ink)}
-  .ghost:hover{background:#f8fafc}
-  main{max-width:1120px;margin:0 auto;padding:22px 22px 60px}
-  h2.section{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
-    margin:28px 0 12px;font-weight:700}
+  /* ---------- Shell ---------- */
+  .shell{display:flex;min-height:100vh}
+  .sidebar{width:236px;background:var(--sidebar);color:#fff;position:fixed;inset:0 auto 0 0;
+    display:flex;flex-direction:column;padding:16px 12px;z-index:20}
+  .sidebar .brand{padding:6px 8px 16px;border-bottom:1px solid var(--sidebar-2)}
+  .sidebar .brand .logo{background:#fff;color:var(--sidebar)}
+  .sidebar .brand .nm{font-size:13.5px;font-weight:700;letter-spacing:-.2px;line-height:1.2}
+  .sidebar .brand .sub{font-size:10.5px;color:var(--side-ink);font-weight:500}
+  .nav{margin-top:12px;display:flex;flex-direction:column;gap:2px;flex:1}
+  .nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;color:var(--side-ink);
+    font-size:13px;font-weight:500}
+  .nav a:hover{background:var(--sidebar-2);color:#fff}
+  .nav a.active{background:var(--accent);color:#fff}
+  .nav a svg{width:16px;height:16px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8}
+  .nav .grp{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#5b6986;padding:14px 10px 6px;font-weight:700}
+  .side-foot{border-top:1px solid var(--sidebar-2);padding:12px 10px 4px;font-size:11.5px;color:var(--side-ink)}
+  .side-foot b{color:#fff;font-weight:600;display:block;font-size:12.5px}
 
+  .main{margin-left:236px;flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{height:58px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;
+    align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:10}
+  .topbar h2{font-size:15px;margin:0;font-weight:650;letter-spacing:-.2px}
+  .topbar .crumb{font-size:12px;color:var(--muted)}
+  .content{padding:24px 26px 64px;max-width:1240px;width:100%}
+
+  /* ---------- Bits ---------- */
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  h3.sec{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    font-weight:700;margin:26px 0 12px}
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px;box-shadow:var(--shadow)}
-  .kpi .k{font-size:12px;color:var(--muted);font-weight:600}
-  .kpi .v{font-size:22px;font-weight:700;margin-top:8px;letter-spacing:-.4px}
-  .kpi .v small{font-size:13px;color:var(--muted);font-weight:600}
-  .kpi.accent-out .v{color:var(--bad)}
-  .kpi.accent-good .v{color:var(--good)}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;box-shadow:var(--shadow)}
+  .tile .k{font-size:11.5px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:6px}
+  .tile .v{font-size:21px;font-weight:700;margin-top:9px;letter-spacing:-.4px;color:var(--ink)}
+  .tile.red .v{color:var(--bad)} .tile.green .v{color:var(--good)}
+  .tile .sub{font-size:11.5px;color:var(--muted);margin-top:3px}
 
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .card .hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--line-2)}
+  .card .hd h4{margin:0;font-size:13.5px;font-weight:650}
   table{width:100%;border-collapse:collapse}
-  th,td{text-align:left;padding:11px 16px;font-size:13px;border-bottom:1px solid var(--line)}
-  th{color:var(--muted);font-weight:600;background:#fbfcfe;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  th,td{text-align:left;padding:11px 16px;font-size:13px;border-bottom:1px solid var(--line-2);vertical-align:middle}
+  th{color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.04em;background:#fafbfc}
   tr:last-child td{border-bottom:0}
-  td.num{text-align:right}
-  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.02em}
-  .b-expected{background:#eef2ff;color:#3949ab}
-  .b-progress{background:#fff6e6;color:#b7791f}
-  .b-received{background:#e9f7ef;color:#0f9d58}
-  .b-done{background:#e9f7ef;color:#0f9d58}
-  .b-review{background:#fdeaea;color:#d64545}
-  .link-btn{background:none;border:0;color:var(--brand);cursor:pointer;font-size:13px;padding:0;font-weight:600}
-  .empty{padding:30px;text-align:center;color:var(--muted)}
-  .sim{font-size:11px;color:var(--muted)}
+  tbody tr:hover{background:#fafbfc}
+  td.num,th.num{text-align:right}
+  .sub{color:var(--muted);font-size:11.5px}
+  .empty{padding:36px 20px;text-align:center;color:var(--muted);font-size:13px}
+  .skeleton{height:14px;background:linear-gradient(90deg,#eef0f3,#eef0f3);border-radius:4px}
 
-  /* ---------- Drawer ---------- */
-  .drawer-bg{position:fixed;inset:0;background:rgba(15,23,42,.35);display:grid;place-items:end stretch;z-index:20}
-  .drawer{width:min(520px,100%);height:100%;background:#fff;margin-left:auto;padding:22px;overflow:auto;
-    box-shadow:-10px 0 40px rgba(15,23,42,.2)}
-  .drawer h3{margin:0 0 2px;font-size:16px}
-  .drawer .close{float:right}
-  .posbar{display:flex;gap:10px;margin:16px 0}
-  .posbar .p{flex:1;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:650;white-space:nowrap}
+  .bg-blue{background:var(--accent-weak);color:var(--accent-ink)}
+  .bg-green{background:var(--good-weak);color:var(--good)}
+  .bg-amber{background:var(--warn-weak);color:var(--warn)}
+  .bg-red{background:var(--bad-weak);color:var(--bad)}
+  .bg-indigo{background:var(--indigo-weak);color:var(--indigo)}
+  .bg-gray{background:#f1f3f6;color:var(--ink-2)}
+  .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .linkbtn{background:none;border:0;color:var(--accent);font-weight:600;font-size:13px;padding:0;cursor:pointer}
+  .neg{color:var(--bad);font-weight:650}
+
+  /* ---------- Drawer & modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(15,23,41,.42);z-index:40;display:flex}
+  .drawer{width:min(560px,100%);margin-left:auto;height:100%;background:#fff;overflow:auto;padding:22px 24px;box-shadow:-10px 0 40px rgba(15,23,41,.2)}
+  .modal{margin:auto;width:min(520px,94%);background:#fff;border-radius:12px;box-shadow:0 20px 60px rgba(15,23,41,.3);overflow:hidden}
+  .modal .mh{padding:16px 20px;border-bottom:1px solid var(--line-2);font-weight:650;font-size:14.5px}
+  .modal .mb{padding:18px 20px;max-height:66vh;overflow:auto}
+  .modal .mf{padding:14px 20px;border-top:1px solid var(--line-2);display:flex;justify-content:flex-end;gap:8px;background:#fafbfc}
+  .field{margin-bottom:12px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .posbar{display:flex;gap:10px;margin:14px 0}
+  .posbar .p{flex:1;border:1px solid var(--line);border-radius:9px;padding:10px 12px}
   .posbar .p .k{font-size:11px;color:var(--muted);font-weight:600}
   .posbar .p .v{font-size:16px;font-weight:700;margin-top:4px}
+  pre.draft{white-space:pre-wrap;font:12px/1.55 ui-monospace,Menlo,monospace;background:#fafbfc;
+    border:1px solid var(--line);border-radius:8px;padding:12px;margin:0;color:var(--ink-2)}
 
-  @media (max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}}
-  @media (max-width:520px){.kpis{grid-template-columns:1fr}}
+  /* ---------- Toast ---------- */
+  #toasts{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:8px;z-index:60}
+  .toast{background:#111827;color:#fff;padding:10px 14px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:340px}
+  .toast.ok{background:#064e3b} .toast.bad{background:#7f1d1d}
+
+  @media (max-width:980px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:760px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.kpis{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -94,310 +139,426 @@
 <!-- ============ LOGIN ============ -->
 <section id="login" class="auth-wrap">
   <form class="auth-card" id="loginForm">
-    <div class="brand"><div class="dot">₹</div><h1>TravelRefund Intelligence</h1></div>
+    <div class="brand"><div class="logo">₹</div></div>
+    <h1>TravelRefund Intelligence</h1>
     <div class="tag">Every rupee accounted for. Every refund traceable.</div>
-
     <label for="email">Work email</label>
     <input id="email" type="email" autocomplete="username" value="demo-owner@flyo.test" required />
-
     <label for="password">Password</label>
     <input id="password" type="password" autocomplete="current-password" value="demopassword1" required />
-
-    <button class="primary" type="submit" id="loginBtn">Sign in</button>
+    <button class="btn block" type="submit" id="loginBtn" style="margin-top:20px">Sign in</button>
     <div id="loginErr" class="err hidden"></div>
-
-    <div class="hint">
-      Demo organisation is pre-filled. Credentials:
-      <code>demo-owner@flyo.test</code> / <code>demopassword1</code>.<br/>
-      No real airline or payment systems are touched — all data is simulated.
-    </div>
+    <div class="hint">Demo credentials pre-filled: <code>demo-owner@flyo.test</code> / <code>demopassword1</code>.
+      All data is simulated — no real airline or payment systems are involved.</div>
   </form>
 </section>
 
 <!-- ============ APP ============ -->
-<div id="app" class="hidden">
-  <div class="topbar">
-    <div class="brand"><div class="dot">₹</div><h1>TravelRefund Intelligence</h1></div>
-    <div style="display:flex;align-items:center;gap:14px">
-      <div class="who">Signed in as <b id="whoEmail"></b> · <span id="whoRole"></span></div>
-      <button class="ghost" id="logoutBtn">Sign out</button>
+<div id="app" class="shell hidden">
+  <aside class="sidebar">
+    <div class="brand" style="display:flex;gap:10px;align-items:center">
+      <div class="logo">₹</div>
+      <div><div class="nm">TravelRefund</div><div class="sub">Intelligence</div></div>
     </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot"><b id="sideOrg">—</b><span id="sideUser">—</span></div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div><h2 id="pageTitle">Dashboard</h2><div class="crumb" id="pageCrumb"></div></div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span class="badge bg-gray" id="roleBadge">—</span>
+        <button class="btn ghost sm" id="logoutBtn">Sign out</button>
+      </div>
+    </div>
+    <div class="content" id="view"></div>
   </div>
-
-  <main>
-    <h2 class="section">Financial overview</h2>
-    <div class="kpis" id="kpis"></div>
-
-    <h2 class="section">Refund cases</h2>
-    <div class="card"><div id="casesBox"><div class="empty">Loading…</div></div></div>
-
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:28px">
-      <h2 class="section" style="margin:0">Reconciliation &amp; discrepancies</h2>
-      <button class="ghost" id="importBtn">Import sample bank statement</button>
-    </div>
-    <div class="card" style="margin-top:12px"><div id="discBox"><div class="empty">Loading…</div></div></div>
-
-    <h2 class="section">Trips</h2>
-    <div class="card"><div id="tripsBox"><div class="empty">Loading…</div></div></div>
-  </main>
 </div>
 
-<div id="drawer"></div>
+<div id="layer"></div>
+<div id="toasts"></div>
 
 <script>
-const API = "/api/v1";
-let token = localStorage.getItem("flyo_token") || null;
-
-const $ = (id) => document.getElementById(id);
-const fmtINR = (s) => "₹" + Number(s).toLocaleString("en-IN", {minimumFractionDigits:2, maximumFractionDigits:2});
-
-async function api(path, opts={}){
-  const headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{});
-  if(token) headers["Authorization"] = "Bearer " + token;
-  const res = await fetch(API+path, Object.assign({}, opts, {headers}));
-  if(res.status === 401){ logout(); throw new Error("Session expired"); }
-  if(!res.ok){ throw new Error((await res.json().catch(()=>({}))).detail || res.statusText); }
-  return res.status === 204 ? null : res.json();
-}
-
-/* ---------- Auth ---------- */
-$("loginForm").addEventListener("submit", async (e)=>{
-  e.preventDefault();
-  const btn = $("loginBtn"); btn.disabled = true; btn.textContent = "Signing in…";
-  $("loginErr").classList.add("hidden");
-  try{
-    const data = await (await fetch(API+"/auth/login", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({email:$("email").value, password:$("password").value})
-    })).json();
-    if(!data.access_token) throw new Error(data.detail || "Invalid credentials");
-    token = data.access_token; localStorage.setItem("flyo_token", token);
-    await boot();
-  }catch(err){
-    $("loginErr").textContent = err.message || "Login failed";
-    $("loginErr").classList.remove("hidden");
-  }finally{ btn.disabled=false; btn.textContent="Sign in"; }
-});
-
-$("logoutBtn").addEventListener("click", logout);
-function logout(){
-  token=null; localStorage.removeItem("flyo_token");
-  $("app").classList.add("hidden"); $("login").classList.remove("hidden");
-}
-
-/* ---------- Boot the app ---------- */
-const STATUS_CLASS = (s)=>{
-  if(s==="REFUND_EXPECTED") return "b-expected";
-  if(s==="CUSTOMER_REFUNDED"||s==="SUPPLIER_REFUND_RECEIVED") return "b-received";
-  if(s==="DISPUTED"||s==="MANUAL_REVIEW_REQUIRED"||s==="REJECTED") return "b-review";
-  return "b-progress";
+const API="/api/v1";
+let token=localStorage.getItem("flyo_token")||null, ME=null;
+const cache={customers:[],suppliers:[]};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=(v,c="INR")=>(c==="INR"?"₹":c+" ")+Number(v||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
+const ICON={
+  dash:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>',
+  trip:'<svg viewBox="0 0 24 24"><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/><circle cx="12" cy="12" r="9"/></svg>',
+  case:'<svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+  recon:'<svg viewBox="0 0 24 24"><path d="M4 7h11M4 7l3-3M4 7l3 3M20 17H9M20 17l-3-3M20 17l-3 3"/></svg>',
+  disc:'<svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>',
+  doc:'<svg viewBox="0 0 24 24"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6"/></svg>',
+  pol:'<svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 5 3.4 7.7 8 9 4.6-1.3 8-4 8-9V7z"/></svg>',
+  audit:'<svg viewBox="0 0 24 24"><path d="M12 8v4l3 2"/><circle cx="12" cy="12" r="9"/></svg>',
 };
 
-async function boot(){
-  $("login").classList.add("hidden"); $("app").classList.remove("hidden");
+async function api(path,opts={}){
+  const h=Object.assign({"Content-Type":"application/json"},opts.headers||{});
+  if(token)h.Authorization="Bearer "+token;
+  const r=await fetch(API+path,Object.assign({},opts,{headers:h}));
+  if(r.status===401){logout();throw new Error("Session expired");}
+  if(!r.ok){let d;try{d=(await r.json()).detail;}catch(e){} throw new Error(typeof d==="string"?d:(d?JSON.stringify(d):r.statusText));}
+  return r.status===204?null:r.json();
+}
+function toast(msg,type=""){const t=document.createElement("div");t.className="toast "+(type);t.textContent=msg;$("toasts").appendChild(t);setTimeout(()=>t.remove(),3200);}
+
+/* ---------- Auth ---------- */
+$("loginForm").addEventListener("submit",async e=>{
+  e.preventDefault();const b=$("loginBtn");b.disabled=true;b.textContent="Signing in…";$("loginErr").classList.add("hidden");
   try{
-    const me = await api("/auth/me");
-    $("whoEmail").textContent = me.email; $("whoRole").textContent = me.role;
-
-    const summary = await api("/dashboard/summary");
-    renderKpis(summary);
-
-    const cases = await api("/refund-cases");
-    const withPos = await Promise.all(cases.map(async c=>{
-      const pos = await api(`/refund-cases/${c.id}/settlement?side=supplier`).catch(()=>null);
-      return {...c, pos};
-    }));
-    renderCases(withPos);
-
-    const trips = await api("/trips");
-    renderTrips(trips);
-
-    await renderDiscrepancies();
-  }catch(err){ console.error(err); }
-}
-
-const SEV_CLASS = (s)=> s==="HIGH" ? "b-review" : s==="MEDIUM" ? "b-progress" : "b-expected";
-
-async function renderDiscrepancies(){
-  const discs = await api("/reconciliation/discrepancies").catch(()=>[]);
-  if(!discs.length){ $("discBox").innerHTML = `<div class="empty">No discrepancies — all imported records reconciled.</div>`; return; }
-  $("discBox").innerHTML = `
-    <table><thead><tr>
-      <th>Type</th><th>Severity</th><th class="num">Amount</th><th>Detail</th><th>Recommended action</th><th></th>
-    </tr></thead><tbody>
-    ${discs.map(d=>{
-      const amt = d.observed_amount || d.expected_amount || d.difference || "0.00";
-      return `<tr>
-        <td><b>${d.kind.replaceAll("_"," ")}</b></td>
-        <td><span class="badge ${SEV_CLASS(d.severity)}">${d.severity}</span></td>
-        <td class="num mono">${fmtINR(amt)}</td>
-        <td class="sim">${d.detail}</td>
-        <td class="sim">${d.recommended_action}</td>
-        <td class="num">${d.status==="OPEN"
-          ? `<button class="link-btn" onclick='resolveDisc(${JSON.stringify(d.id)})'>Resolve</button>`
-          : `<span class="badge b-done">${d.status}</span>`}</td>
-      </tr>`;
-    }).join("")}
-    </tbody></table>`;
-}
-
-async function resolveDisc(id){
-  await api(`/reconciliation/discrepancies/${id}/resolve`, {
-    method:"POST", body: JSON.stringify({status:"RESOLVED"})
-  }).catch(()=>{});
-  await renderDiscrepancies();
-  const s = await api("/dashboard/summary"); renderKpis(s);
-}
-
-$("importBtn").addEventListener("click", async ()=>{
-  const btn = $("importBtn"); btn.disabled = true; btn.textContent = "Importing…";
-  try{
-    await api("/reconciliation/import", { method:"POST", body: JSON.stringify({
-      source:"BANK", filename:"sample-bank.csv",
-      rows:[
-        {external_ref:"BANK-IDG-1", amount:"5000.00", value_date:"2026-03-01"},
-        {external_ref:"UPI-ADHOC-"+Date.now(), amount:"1800.00", value_date:"2026-03-09"},
-      ],
-    })});
-    await renderDiscrepancies();
-    const s = await api("/dashboard/summary"); renderKpis(s);
-  }finally{ btn.disabled=false; btn.textContent="Import sample bank statement"; }
+    const d=await (await fetch(API+"/auth/login",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email:$("email").value,password:$("password").value})})).json();
+    if(!d.access_token)throw new Error(d.detail||"Invalid credentials");
+    token=d.access_token;localStorage.setItem("flyo_token",token);await boot();
+  }catch(err){$("loginErr").textContent=err.message||"Login failed";$("loginErr").classList.remove("hidden");}
+  finally{b.disabled=false;b.textContent="Sign in";}
 });
+$("logoutBtn").addEventListener("click",logout);
+function logout(){token=null;ME=null;localStorage.removeItem("flyo_token");$("app").classList.add("hidden");$("login").classList.remove("hidden");}
 
-function renderKpis(s){
-  const cards = [
-    {k:"Trips", v:s.total_trips, raw:true},
-    {k:"Original booking value", v:fmtINR(s.total_original_value)},
-    {k:"Expected supplier refunds", v:fmtINR(s.total_expected_supplier_refund)},
-    {k:"Supplier refunds received", v:fmtINR(s.total_supplier_refund_received), cls:"accent-good"},
-    {k:"Customer refunded", v:fmtINR(s.total_customer_refunded)},
-    {k:"Outstanding from suppliers", v:fmtINR(s.total_outstanding), cls:"accent-out"},
-    {k:"Cases with balance due", v:s.open_outstanding_cases, raw:true},
-    {k:"Open discrepancies", v:(s.open_discrepancies ?? 0), raw:true, cls:(s.open_discrepancies>0?"accent-out":"")},
+const NAV=[
+  {id:"dashboard",label:"Dashboard",icon:"dash"},
+  {grp:"Operations"},
+  {id:"trips",label:"Trips",icon:"trip"},
+  {id:"cases",label:"Refund cases",icon:"case"},
+  {id:"documents",label:"Documents",icon:"doc"},
+  {grp:"Finance"},
+  {id:"reconciliation",label:"Reconciliation",icon:"recon"},
+  {id:"discrepancies",label:"Discrepancies",icon:"disc"},
+  {id:"policies",label:"Policies",icon:"pol"},
+  {grp:"Governance"},
+  {id:"audit",label:"Audit history",icon:"audit"},
+];
+function renderNav(){
+  $("nav").innerHTML=NAV.map(n=>n.grp?`<div class="grp">${n.grp}</div>`
+    :`<a href="#/${n.id}" data-id="${n.id}">${ICON[n.icon]}<span>${n.label}</span></a>`).join("");
+}
+
+async function boot(){
+  $("login").classList.add("hidden");$("app").classList.remove("hidden");
+  renderNav();
+  ME=await api("/auth/me");
+  $("sideOrg").textContent="Himalaya Travels";$("sideUser").textContent=ME.email;
+  $("roleBadge").textContent=ME.role;
+  [cache.customers,cache.suppliers]=await Promise.all([api("/customers"),api("/suppliers")]);
+  if(!location.hash)location.hash="#/dashboard";
+  route();
+}
+window.addEventListener("hashchange",route);
+
+const TITLES={dashboard:["Dashboard","Financial overview across all cancelled trips"],
+  trips:["Trips","Cancelled trips and their bookings"],cases:["Refund cases","Expected, received and outstanding refunds"],
+  reconciliation:["Reconciliation","Match imported bank & gateway records to the ledger"],
+  discrepancies:["Discrepancies","Open financial exceptions, prioritised by exposure"],
+  documents:["Documents","Cancellation documents and extracted fields"],
+  policies:["Cancellation policies","Supplier deduction rules"],audit:["Audit history","Every recorded action"]};
+function route(){
+  const id=(location.hash.replace("#/","")||"dashboard");
+  document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("active",a.dataset.id===id));
+  const t=TITLES[id]||["",""];$("pageTitle").textContent=t[0];$("pageCrumb").textContent=t[1];
+  const fn={dashboard:viewDashboard,trips:viewTrips,cases:viewCases,reconciliation:viewReconciliation,
+    discrepancies:viewDiscrepancies,documents:viewDocuments,policies:viewPolicies,audit:viewAudit}[id]||viewDashboard;
+  $("view").innerHTML=`<div class="card"><div class="empty">Loading…</div></div>`;
+  fn().catch(e=>{$("view").innerHTML=`<div class="card"><div class="empty">${esc(e.message)}</div></div>`;});
+}
+
+/* ---------- Status helpers ---------- */
+const STATUS_BADGE=s=>{
+  if(["REFUND_EXPECTED"].includes(s))return"bg-blue";
+  if(["CUSTOMER_REFUNDED","SUPPLIER_REFUND_RECEIVED","CUSTOMER_PARTIALLY_REFUNDED"].includes(s))return"bg-green";
+  if(["DISPUTED","MANUAL_REVIEW_REQUIRED","REJECTED"].includes(s))return"bg-red";
+  return"bg-amber";};
+const SEV_BADGE=s=>s==="HIGH"?"bg-red":s==="MEDIUM"?"bg-amber":"bg-blue";
+const pretty=s=>String(s).replaceAll("_"," ").toLowerCase().replace(/^\w/,c=>c.toUpperCase());
+
+/* ---------- Dashboard ---------- */
+async function viewDashboard(){
+  const [s,cases,discs]=await Promise.all([api("/dashboard/summary"),api("/refund-cases"),api("/reconciliation/discrepancies?status=OPEN")]);
+  const tiles=[
+    {k:"Cancelled trips",v:s.total_trips,sub:`${s.total_bookings} bookings`},
+    {k:"Original booking value",v:fmt(s.total_original_value)},
+    {k:"Expected supplier refunds",v:fmt(s.total_expected_supplier_refund)},
+    {k:"Supplier refunds received",v:fmt(s.total_supplier_refund_received),cls:"green"},
+    {k:"Customer refunded",v:fmt(s.total_customer_refunded)},
+    {k:"Outstanding from suppliers",v:fmt(s.total_outstanding),cls:"red"},
+    {k:"Refund cases",v:s.total_refund_cases,sub:`${s.open_outstanding_cases} with balance due`},
+    {k:"Open discrepancies",v:(s.open_discrepancies??0),cls:(s.open_discrepancies>0?"red":"")},
   ];
-  $("kpis").innerHTML = cards.map(c=>`
-    <div class="kpi ${c.cls||""}">
-      <div class="k">${c.k}</div>
-      <div class="v mono">${c.v}</div>
-    </div>`).join("");
-}
-
-function renderCases(cases){
-  if(!cases.length){ $("casesBox").innerHTML = `<div class="empty">No refund cases yet.</div>`; return; }
-  $("casesBox").innerHTML = `
-    <table><thead><tr>
-      <th>Case</th><th>Status</th><th class="num">Expected</th>
-      <th class="num">Received</th><th class="num">Outstanding</th><th></th>
-    </tr></thead><tbody>
-    ${cases.map(c=>{
-      const rec = c.pos ? c.pos.received : "0.00";
-      const out = c.pos ? c.pos.outstanding : c.expected_supplier_refund;
-      const outCls = Number(out)>0 ? "style='color:var(--bad);font-weight:700'" : "";
-      return `<tr>
-        <td class="mono">${c.id.slice(0,8)}</td>
-        <td><span class="badge ${STATUS_CLASS(c.status)}">${c.status.replaceAll("_"," ")}</span></td>
-        <td class="num mono">${fmtINR(c.expected_supplier_refund)}</td>
-        <td class="num mono">${fmtINR(rec)}</td>
-        <td class="num mono" ${outCls}>${fmtINR(out)}</td>
-        <td class="num"><button class="link-btn" onclick='openCase(${JSON.stringify(c.id)})'>View</button></td>
-      </tr>`;
-    }).join("")}
-    </tbody></table>`;
-}
-
-function renderTrips(trips){
-  if(!trips.length){ $("tripsBox").innerHTML = `<div class="empty">No trips yet.</div>`; return; }
-  $("tripsBox").innerHTML = `
-    <table><thead><tr><th>Reference</th><th>Currency</th><th>Status</th><th>Trip ID</th></tr></thead>
-    <tbody>${trips.map(t=>`<tr>
-      <td><b>${t.reference}</b></td><td>${t.currency}</td>
-      <td><span class="badge b-progress">${t.status}</span></td>
-      <td class="mono sim">${t.id.slice(0,8)}</td>
-    </tr>`).join("")}</tbody></table>`;
-}
-
-/* ---------- Case drawer (ledger + settlement) ---------- */
-async function openCase(id){
-  const [c, ledger, sup, cust] = await Promise.all([
-    api(`/refund-cases/${id}`),
-    api(`/refund-cases/${id}/ledger`),
-    api(`/refund-cases/${id}/settlement?side=supplier`).catch(()=>null),
-    api(`/refund-cases/${id}/settlement?side=customer`).catch(()=>null),
-  ]);
-  const lines = (c.supplier_breakdown?.lines)||[];
-  $("drawer").innerHTML = `
-    <div class="drawer-bg" onclick="if(event.target===this)closeDrawer()">
-      <div class="drawer">
-        <button class="ghost close" onclick="closeDrawer()">Close</button>
-        <h3>Refund case</h3>
-        <div class="sim mono">${c.id}</div>
-        <div style="margin-top:8px"><span class="badge ${STATUS_CLASS(c.status)}">${c.status.replaceAll("_"," ")}</span></div>
-
-        <div class="posbar">
-          <div class="p"><div class="k">Expected (supplier)</div><div class="v mono">${fmtINR(sup?sup.expected:c.expected_supplier_refund)}</div></div>
-          <div class="p"><div class="k">Received</div><div class="v mono">${fmtINR(sup?sup.received:"0")}</div></div>
-          <div class="p"><div class="k">Outstanding</div><div class="v mono" style="${Number(sup?sup.outstanding:0)>0?'color:var(--bad)':''}">${fmtINR(sup?sup.outstanding:"0")}</div></div>
-        </div>
-
-        <h2 class="section" style="margin-top:8px">Expected refund breakdown</h2>
-        <div class="card"><table><tbody>
-          ${lines.map(l=>`<tr><td>${l.label}<div class="sim">${l.kind} · ${l.evidence_ref||"—"}</div></td>
-            <td class="num mono">${fmtINR(l.signed)}</td></tr>`).join("")}
-          <tr><td><b>Expected supplier refund</b></td><td class="num mono"><b>${fmtINR(c.supplier_breakdown?.total||c.expected_supplier_refund)}</b></td></tr>
-        </tbody></table></div>
-
-        <h2 class="section">Ledger (append-only)</h2>
-        <div class="card">${ledger.length? `<table><thead><tr><th>Account</th><th>Type</th><th class="num">Amount</th><th>Evidence</th></tr></thead>
-          <tbody>${ledger.map(e=>`<tr>
-            <td><span class="badge ${e.account==='SUPPLIER'?'b-expected':'b-received'}">${e.account}</span></td>
-            <td class="sim">${e.entry_type.replaceAll("_"," ")}</td>
-            <td class="num mono">${fmtINR(e.amount)}</td>
-            <td class="sim mono">${e.evidence_ref}</td></tr>`).join("")}</tbody></table>`
-          : `<div class="empty">No ledger entries — no supplier money received yet.</div>`}</div>
-
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:22px">
-          <h2 class="section" style="margin:0">AI investigation</h2>
-          <div style="display:flex;gap:8px">
-            <button class="ghost" onclick='runInvestigation(${JSON.stringify(id)})'>Investigate</button>
-            <button class="ghost" onclick='draftFollowup(${JSON.stringify(id)})'>Draft follow-up</button>
-          </div>
-        </div>
-        <div id="investBox" class="card" style="padding:14px"><div class="sim">Run an evidence-grounded investigation to explain gaps and get recommended actions.</div></div>
-      </div>
+  const withPos=await Promise.all(cases.map(async c=>({...c,pos:await api(`/refund-cases/${c.id}/settlement?side=supplier`).catch(()=>null)})));
+  const outstanding=withPos.filter(c=>c.pos&&Number(c.pos.outstanding)>0).sort((a,b)=>Number(b.pos.outstanding)-Number(a.pos.outstanding));
+  $("view").innerHTML=`
+    <div class="kpis">${tiles.map(t=>`<div class="tile ${t.cls||""}"><div class="k">${t.k}</div><div class="v mono">${t.v}</div>${t.sub?`<div class="sub">${t.sub}</div>`:""}</div>`).join("")}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px">
+      <div class="card"><div class="hd"><h4>Outstanding supplier refunds</h4><a href="#/cases" class="linkbtn">All cases</a></div>
+        ${outstanding.length?`<table><thead><tr><th>Case</th><th class="num">Expected</th><th class="num">Outstanding</th></tr></thead>
+        <tbody>${outstanding.slice(0,6).map(c=>`<tr style="cursor:pointer" onclick='openCase("${c.id}")'>
+          <td class="mono">${c.id.slice(0,8)}</td><td class="num mono">${fmt(c.expected_supplier_refund)}</td>
+          <td class="num mono neg">${fmt(c.pos.outstanding)}</td></tr>`).join("")}</tbody></table>`:`<div class="empty">No outstanding refunds. 🎉</div>`}</div>
+      <div class="card"><div class="hd"><h4>Open discrepancies</h4><a href="#/discrepancies" class="linkbtn">Queue</a></div>
+        ${discs.length?`<table><thead><tr><th>Type</th><th>Severity</th><th class="num">Amount</th></tr></thead>
+        <tbody>${discs.slice(0,6).map(d=>`<tr><td>${pretty(d.kind)}</td><td><span class="badge ${SEV_BADGE(d.severity)}"><span class="dot"></span>${d.severity}</span></td>
+          <td class="num mono">${fmt(d.observed_amount||d.expected_amount||d.difference)}</td></tr>`).join("")}</tbody></table>`:`<div class="empty">No open discrepancies.</div>`}</div>
     </div>`;
 }
 
-async function runInvestigation(id){
-  $("investBox").innerHTML = `<div class="sim">Investigating…</div>`;
-  const r = await api(`/refund-cases/${id}/investigate`, {method:"POST", body:"{}"}).catch(e=>null);
-  if(!r){ $("investBox").innerHTML = `<div class="sim">Could not run investigation.</div>`; return; }
-  $("investBox").innerHTML = `
-    <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
-      <span class="badge ${SEV_CLASS(r.severity)}">${r.severity}</span>
-      <span class="sim">engine: ${r.engine}${r.evidence_complete?" · evidence complete":""}</span>
-    </div>
-    <div style="margin-bottom:12px">${r.summary}</div>
-    ${r.findings.length?`<b class="sim">Findings</b><ul style="margin:6px 0 12px;padding-left:18px">
-      ${r.findings.map(f=>`<li><b>${f.code.replaceAll("_"," ")}</b> — ${f.message} <span class="sim">${(f.evidence_refs||[]).join(", ")}</span></li>`).join("")}</ul>`:""}
-    ${r.recommended_actions.length?`<b class="sim">Recommended actions</b><ol style="margin:6px 0 0;padding-left:18px">
-      ${r.recommended_actions.map(a=>`<li>${a}</li>`).join("")}</ol>`:""}`;
+/* ---------- Trips ---------- */
+async function viewTrips(){
+  const trips=await api("/trips");
+  $("view").innerHTML=`
+    <div class="row" style="margin-bottom:14px"><div class="sub">${trips.length} trip(s)</div>
+      <div style="display:flex;gap:8px"><button class="btn ghost sm" onclick="newCustomer()">New customer</button>
+      <button class="btn ghost sm" onclick="newSupplier()">New supplier</button>
+      <button class="btn sm" onclick="newTrip()">+ New trip</button></div></div>
+    <div class="card">${trips.length?`<table><thead><tr><th>Reference</th><th>Customer</th><th>Currency</th><th>Status</th><th></th></tr></thead>
+      <tbody>${trips.map(t=>{const cust=cache.customers.find(c=>c.id===t.customer_id);return `<tr>
+        <td><b>${esc(t.reference)}</b></td><td>${esc(cust?cust.name:"—")}</td><td>${t.currency}</td>
+        <td><span class="badge bg-gray">${pretty(t.status)}</span></td>
+        <td class="num"><button class="linkbtn" onclick='openTrip("${t.id}")'>Open</button></td></tr>`;}).join("")}</tbody></table>`
+      :`<div class="empty">No trips yet. Create a customer, then a trip.</div>`}</div>`;
 }
 
-async function draftFollowup(id){
-  const r = await api(`/refund-cases/${id}/followup-draft`, {method:"POST", body:"{}"}).catch(e=>null);
-  if(!r){ return; }
-  $("investBox").innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <b class="sim">Supplier follow-up draft</b>
-      <span class="badge b-progress">${r.status}</span>
-    </div>
-    <pre style="white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace;background:#fbfcfe;border:1px solid var(--line);border-radius:8px;padding:12px;margin:0">${r.body.replace(/</g,"&lt;")}</pre>
-    <div class="sim" style="margin-top:8px">Draft only — review and send through your own channel; nothing is transmitted automatically.</div>`;
+async function openTrip(id){
+  const [trip,bookings]=await Promise.all([api(`/trips/${id}`),api(`/trips/${id}/bookings`)]);
+  const cust=cache.customers.find(c=>c.id===trip.customer_id);
+  drawer(`Trip ${esc(trip.reference)}`,`
+    <div class="sub mono" style="margin-bottom:10px">${trip.id}</div>
+    <div class="posbar"><div class="p"><div class="k">Customer</div><div class="v" style="font-size:14px">${esc(cust?cust.name:"—")}</div></div>
+      <div class="p"><div class="k">Status</div><div class="v" style="font-size:14px">${pretty(trip.status)}</div></div>
+      <div class="p"><div class="k">Currency</div><div class="v" style="font-size:14px">${trip.currency}</div></div></div>
+    <div class="row"><h3 class="sec" style="margin:14px 0 10px">Bookings</h3><button class="btn ghost sm" onclick='addBooking("${id}")'>+ Add booking</button></div>
+    <div class="card">${bookings.length?`<table><thead><tr><th>Supplier</th><th>Ref</th><th>Service</th><th class="num">Amount</th><th></th></tr></thead>
+      <tbody>${bookings.map(b=>{const sup=cache.suppliers.find(s=>s.id===b.supplier_id);return`<tr>
+        <td>${esc(sup?sup.name:"—")}</td><td class="mono">${esc(b.booking_reference)}</td><td>${pretty(b.service_type)}</td>
+        <td class="num mono">${fmt(b.original_amount,b.currency)}</td>
+        <td class="num"><button class="linkbtn" onclick='openCaseFromBooking("${b.id}")'>Open refund case</button></td></tr>`;}).join("")}</tbody></table>`
+      :`<div class="empty">No bookings. Add one to start a refund case.</div>`}</div>`);
 }
-function closeDrawer(){ $("drawer").innerHTML=""; }
 
-/* ---------- Resume session ---------- */
-if(token) boot();
+/* ---------- Cases ---------- */
+async function viewCases(){
+  const cases=await api("/refund-cases");
+  const withPos=await Promise.all(cases.map(async c=>({...c,pos:await api(`/refund-cases/${c.id}/settlement?side=supplier`).catch(()=>null)})));
+  $("view").innerHTML=`
+    <div class="row" style="margin-bottom:14px"><div class="sub">${cases.length} case(s)</div></div>
+    <div class="card">${cases.length?`<table><thead><tr><th>Case</th><th>Status</th><th class="num">Expected</th><th class="num">Received</th><th class="num">Outstanding</th><th></th></tr></thead>
+    <tbody>${withPos.map(c=>{const out=c.pos?c.pos.outstanding:c.expected_supplier_refund,rec=c.pos?c.pos.received:"0";return`<tr style="cursor:pointer" onclick='openCase("${c.id}")'>
+      <td class="mono">${c.id.slice(0,8)}</td><td><span class="badge ${STATUS_BADGE(c.status)}"><span class="dot"></span>${pretty(c.status)}</span></td>
+      <td class="num mono">${fmt(c.expected_supplier_refund)}</td><td class="num mono">${fmt(rec)}</td>
+      <td class="num mono ${Number(out)>0?"neg":""}">${fmt(out)}</td>
+      <td class="num"><button class="linkbtn">View</button></td></tr>`;}).join("")}</tbody></table>`
+      :`<div class="empty">No refund cases. Open one from a booking on a trip.</div>`}</div>`;
+}
+
+async function openCase(id){
+  const [c,ledger,sup,invs]=await Promise.all([api(`/refund-cases/${id}`),api(`/refund-cases/${id}/ledger`),
+    api(`/refund-cases/${id}/settlement?side=supplier`).catch(()=>null),api(`/refund-cases/${id}/investigations`).catch(()=>[])]);
+  const lines=(c.supplier_breakdown&&c.supplier_breakdown.lines)||[];
+  drawer(`Refund case`,`
+    <div class="sub mono">${c.id}</div>
+    <div style="margin:8px 0"><span class="badge ${STATUS_BADGE(c.status)}"><span class="dot"></span>${pretty(c.status)}</span></div>
+    <div class="posbar">
+      <div class="p"><div class="k">Expected</div><div class="v mono">${fmt(sup?sup.expected:c.expected_supplier_refund)}</div></div>
+      <div class="p"><div class="k">Received</div><div class="v mono">${fmt(sup?sup.received:0)}</div></div>
+      <div class="p"><div class="k">Outstanding</div><div class="v mono" style="${Number(sup?sup.outstanding:0)>0?'color:var(--bad)':''}">${fmt(sup?sup.outstanding:0)}</div></div></div>
+    <div style="display:flex;gap:8px;margin:4px 0 8px">
+      <button class="btn ghost sm" onclick='postRefund("${id}","supplier")'>Record supplier refund</button>
+      <button class="btn ghost sm" onclick='postRefund("${id}","customer")'>Record customer refund</button></div>
+    <h3 class="sec">Expected refund breakdown</h3>
+    <div class="card"><table><tbody>
+      ${lines.map(l=>`<tr><td>${esc(l.label)}<div class="sub">${l.kind} · ${esc(l.evidence_ref||"—")}</div></td><td class="num mono">${fmt(l.signed)}</td></tr>`).join("")}
+      <tr><td><b>Expected supplier refund</b></td><td class="num mono"><b>${fmt((c.supplier_breakdown&&c.supplier_breakdown.total)||c.expected_supplier_refund)}</b></td></tr></tbody></table></div>
+    <h3 class="sec">Ledger (append-only)</h3>
+    <div class="card">${ledger.length?`<table><thead><tr><th>Account</th><th>Type</th><th class="num">Amount</th><th>Evidence</th></tr></thead>
+      <tbody>${ledger.map(e=>`<tr><td><span class="badge ${e.account==="SUPPLIER"?"bg-blue":"bg-green"}">${e.account}</span></td>
+      <td class="sub">${pretty(e.entry_type)}</td><td class="num mono">${fmt(e.amount,e.currency)}</td><td class="sub mono">${esc(e.evidence_ref)}</td></tr>`).join("")}</tbody></table>`
+      :`<div class="empty">No ledger entries yet.</div>`}</div>
+    <div class="row"><h3 class="sec">AI investigation</h3><div style="display:flex;gap:8px">
+      <button class="btn ghost sm" onclick='runInvestigation("${id}")'>Investigate</button>
+      <button class="btn ghost sm" onclick='draftFollowup("${id}")'>Draft follow-up</button></div></div>
+    <div id="investBox" class="card" style="padding:14px">${invs.length?renderInvestigation(invs[0]):`<div class="sub">Run an evidence-grounded investigation to explain gaps and get recommended actions.</div>`}</div>`);
+}
+function renderInvestigation(r){
+  return `<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px"><span class="badge ${SEV_BADGE(r.severity)}"><span class="dot"></span>${r.severity}</span>
+    <span class="sub">engine: ${r.engine}${r.evidence_complete?" · evidence complete":""}</span></div>
+    <div style="margin-bottom:10px">${esc(r.summary)}</div>
+    ${r.findings.length?`<div class="sub" style="font-weight:700;margin-bottom:4px">FINDINGS</div><ul style="margin:0 0 12px;padding-left:18px">
+      ${r.findings.map(f=>`<li style="margin-bottom:4px"><b>${pretty(f.code)}</b> — ${esc(f.message)} <span class="sub">${(f.evidence_refs||[]).join(", ")}</span></li>`).join("")}</ul>`:""}
+    ${r.recommended_actions.length?`<div class="sub" style="font-weight:700;margin-bottom:4px">RECOMMENDED ACTIONS</div><ol style="margin:0;padding-left:18px">
+      ${r.recommended_actions.map(a=>`<li style="margin-bottom:3px">${esc(a)}</li>`).join("")}</ol>`:""}`;
+}
+async function runInvestigation(id){$("investBox").innerHTML=`<div class="sub">Investigating…</div>`;
+  try{const r=await api(`/refund-cases/${id}/investigate`,{method:"POST",body:"{}"});$("investBox").innerHTML=renderInvestigation(r);toast("Investigation complete","ok");}
+  catch(e){$("investBox").innerHTML=`<div class="sub">${esc(e.message)}</div>`;}}
+async function draftFollowup(id){try{const r=await api(`/refund-cases/${id}/followup-draft`,{method:"POST",body:"{}"});
+  $("investBox").innerHTML=`<div class="row" style="margin-bottom:8px"><div class="sub" style="font-weight:700">SUPPLIER FOLLOW-UP DRAFT</div><span class="badge bg-amber">${r.status}</span></div>
+  <pre class="draft">${esc(r.body)}</pre><div class="sub" style="margin-top:8px">Draft only — review and send via your own channel; nothing is transmitted automatically.</div>`;toast("Draft created","ok");}catch(e){toast(e.message,"bad");}}
+
+/* ---------- Reconciliation ---------- */
+async function viewReconciliation(){
+  const batches=await api("/reconciliation/batches");
+  $("view").innerHTML=`
+    <div class="row" style="margin-bottom:14px"><div class="sub">${batches.length} import batch(es)</div>
+      <button class="btn sm" onclick="importRecon()">+ Import records</button></div>
+    <div class="card"><div class="hd"><h4>Import batches</h4></div>
+    ${batches.length?`<table><thead><tr><th>Source</th><th>File</th><th class="num">Records</th><th class="num">Matched</th><th class="num">Discrepancies</th><th class="num">Accuracy</th></tr></thead>
+    <tbody>${batches.map(b=>`<tr><td><span class="badge bg-indigo">${b.source}</span></td><td class="sub">${esc(b.filename||"—")}</td>
+      <td class="num mono">${b.record_count}</td><td class="num mono">${b.matched_count}</td>
+      <td class="num mono ${b.discrepancy_count>0?"neg":""}">${b.discrepancy_count}</td><td class="num mono">${Math.round(Number(b.accuracy)*100)}%</td></tr>`).join("")}</tbody></table>`
+      :`<div class="empty">No reconciliation imports yet.</div>`}</div>`;
+}
+function importRecon(){
+  modal("Import bank / gateway records",`
+    <div class="field"><label>Paste CSV (headers: reference, amount, date)</label>
+      <textarea id="csvText" rows="7" placeholder="reference,amount,date&#10;BANK-IDG-1,5000.00,2026-03-01&#10;UPI-XYZ,1800.00,2026-03-09">reference,amount,date
+BANK-IDG-1,5000.00,2026-03-01
+UPI-NEW-${Date.now()%100000},1800.00,2026-03-09</textarea></div>
+    <div class="sub">Rows are matched against recorded supplier ledger entries; unmatched or mismatched rows become discrepancies.</div>`,
+    async()=>{const r=await api("/reconciliation/import",{method:"POST",body:JSON.stringify({source:"BANK",filename:"import.csv",csv_text:$("csvText").value})});
+      toast(`Imported ${r.record_count} rows — ${r.matched_count} matched, ${r.discrepancy_count} discrepancies`,"ok");route();},"Import & reconcile");
+}
+
+/* ---------- Discrepancies ---------- */
+async function viewDiscrepancies(){
+  const discs=await api("/reconciliation/discrepancies");
+  $("view").innerHTML=`<div class="card"><div class="hd"><h4>Discrepancy queue</h4><div class="sub">Sorted by financial exposure</div></div>
+    ${discs.length?`<table><thead><tr><th>Type</th><th>Severity</th><th class="num">Amount</th><th>Detail</th><th>Recommended action</th><th>Status</th><th></th></tr></thead>
+    <tbody>${discs.map(d=>`<tr><td><b>${pretty(d.kind)}</b></td><td><span class="badge ${SEV_BADGE(d.severity)}"><span class="dot"></span>${d.severity}</span></td>
+      <td class="num mono">${fmt(d.observed_amount||d.expected_amount||d.difference)}</td><td class="sub">${esc(d.detail)}</td>
+      <td class="sub">${esc(d.recommended_action)}</td><td><span class="badge ${d.status==="OPEN"?"bg-amber":"bg-green"}">${d.status}</span></td>
+      <td class="num">${d.status==="OPEN"?`<button class="linkbtn" onclick='resolveDisc("${d.id}")'>Resolve</button>`:""}</td></tr>`).join("")}</tbody></table>`
+      :`<div class="empty">No discrepancies — everything reconciles.</div>`}</div>`;
+}
+async function resolveDisc(id){try{await api(`/reconciliation/discrepancies/${id}/resolve`,{method:"POST",body:JSON.stringify({status:"RESOLVED"})});toast("Discrepancy resolved","ok");route();}catch(e){toast(e.message,"bad");}}
+
+/* ---------- Documents ---------- */
+async function viewDocuments(){
+  const docs=await api("/documents");
+  $("view").innerHTML=`<div class="row" style="margin-bottom:14px"><div class="sub">${docs.length} document(s)</div>
+    <button class="btn sm" onclick="ingestDoc()">+ Ingest document</button></div>
+    <div class="card">${docs.length?`<table><thead><tr><th>File</th><th>Type</th><th>Status</th><th>Extracted amount</th><th>Booking ref</th><th></th></tr></thead>
+    <tbody>${docs.map(d=>{const ex=d.extraction||{};const amt=(ex.extracted&&ex.extracted.amounts&&ex.extracted.amounts[0])?ex.extracted.amounts[0].value:null;
+      const ref=(ex.extracted&&ex.extracted.booking_refs&&ex.extracted.booking_refs[0])?ex.extracted.booking_refs[0].value:null;return`<tr>
+      <td><b>${esc(d.filename||"document")}</b></td><td>${pretty(d.doc_type)}</td>
+      <td><span class="badge ${d.status==="VERIFIED"?"bg-green":"bg-amber"}">${pretty(d.status)}</span></td>
+      <td class="mono">${amt?fmt(amt):"—"}</td><td class="mono">${esc(ref||"—")}</td>
+      <td class="num"><button class="linkbtn" onclick='openDoc("${d.id}")'>Review</button></td></tr>`;}).join("")}</tbody></table>`
+      :`<div class="empty">No documents. Ingest a cancellation confirmation to extract fields.</div>`}</div>`;
+}
+function ingestDoc(){
+  modal("Ingest cancellation document",`
+    <div class="field"><label>Filename</label><input id="dfn" value="cancellation.txt"></div>
+    <div class="field"><label>Document text</label><textarea id="dtext" rows="8">IndiGo - Cancellation Confirmation
+PNR: 6E-NEW-001
+Original fare: INR 11,000.00
+Cancellation charge: Rs. 2,500.00
+Refund amount payable: Rs. 8,500.00
+Cancellation date: 2026-03-10</textarea></div>
+    <div class="sub">The extraction engine pulls amounts, references and dates with confidence scores.</div>`,
+    async()=>{const r=await api("/documents",{method:"POST",body:JSON.stringify({content_text:$("dtext").value,filename:$("dfn").value,doc_type:"CANCELLATION"})});
+      toast("Document ingested & extracted","ok");route();setTimeout(()=>openDoc(r.id),200);},"Ingest & extract");
+}
+async function openDoc(id){
+  const d=await api(`/documents/${id}`);const ex=(d.extraction&&d.extraction.extracted)||{};
+  const cand=a=>a&&a.length?a.map(c=>`<span class="badge bg-gray" style="margin:2px 4px 2px 0">${esc(c.value)} · ${Math.round(Number(c.confidence)*100)}%</span>`).join(""):"—";
+  drawer(`Document — ${esc(d.filename||"")}`,`
+    <div style="margin-bottom:8px"><span class="badge ${d.status==="VERIFIED"?"bg-green":"bg-amber"}">${pretty(d.status)}</span></div>
+    <h3 class="sec">Extracted fields</h3>
+    <div class="card" style="padding:14px">
+      <div class="field"><div class="sub" style="font-weight:700">AMOUNTS</div>${cand(ex.amounts)}</div>
+      <div class="field"><div class="sub" style="font-weight:700">BOOKING REFERENCES</div>${cand(ex.booking_refs)}</div>
+      <div class="field"><div class="sub" style="font-weight:700">DATES</div>${cand(ex.dates)}</div>
+      <div><div class="sub" style="font-weight:700">SUPPLIER</div>${ex.supplier?`<span class="badge bg-indigo">${esc(ex.supplier.value)}</span>`:"—"}</div>
+    </div>
+    <h3 class="sec">Human verification</h3>
+    <div class="card" style="padding:14px">
+      ${d.extraction&&d.extraction.verified?`<div class="badge bg-green">Verified — ${fmt(d.extraction.verified_amount)} · ${esc(d.extraction.verified_booking_ref||"")}</div>`:`
+      <div class="grid2"><div class="field"><label>Confirm amount</label><input id="vamt" value="${(ex.amounts&&ex.amounts[0])?ex.amounts[0].value:""}"></div>
+        <div class="field"><label>Confirm booking ref</label><input id="vref" value="${(ex.booking_refs&&ex.booking_refs[0])?ex.booking_refs[0].value:""}"></div></div>
+      <button class="btn sm" onclick='verifyDoc("${id}")'>Confirm extraction</button>`}
+    </div>`);
+}
+async function verifyDoc(id){try{await api(`/documents/${id}/verify`,{method:"POST",body:JSON.stringify({amount:$("vamt").value,booking_ref:$("vref").value})});toast("Extraction verified","ok");closeLayer();route();}catch(e){toast(e.message,"bad");}}
+
+/* ---------- Policies ---------- */
+async function viewPolicies(){
+  const pols=await api("/policies");
+  $("view").innerHTML=`<div class="row" style="margin-bottom:14px"><div class="sub">${pols.length} policy(ies)</div></div>
+    <div class="card">${pols.length?`<table><thead><tr><th>Version</th><th>Currency</th><th>Tiers</th><th>Non-refundable</th></tr></thead>
+    <tbody>${pols.map(p=>`<tr><td><b>${esc(p.version)}</b></td><td>${p.currency}</td>
+      <td class="sub">${(p.tiers||[]).map(t=>esc(t.label||t.basis)).join(", ")}</td><td class="mono">${fmt(p.non_refundable_fixed,p.currency)}</td></tr>`).join("")}</tbody></table>`
+      :`<div class="empty">No policies defined.</div>`}</div>`;
+}
+
+/* ---------- Audit ---------- */
+async function viewAudit(){
+  const rows=await api("/audit-logs?limit=150");
+  $("view").innerHTML=`<div class="card"><div class="hd"><h4>Audit history</h4><div class="sub">${rows.length} most recent actions</div></div>
+    ${rows.length?`<table><thead><tr><th>When</th><th>Action</th><th>Entity</th><th>Detail</th></tr></thead>
+    <tbody>${rows.map(r=>`<tr><td class="sub mono">${new Date(r.created_at).toLocaleString("en-IN")}</td>
+      <td><span class="badge bg-gray">${esc(r.action)}</span></td><td class="sub">${esc(r.entity_type)} ${r.entity_id?`· ${r.entity_id.slice(0,8)}`:""}</td>
+      <td class="sub mono">${esc(JSON.stringify(r.detail))}</td></tr>`).join("")}</tbody></table>`
+      :`<div class="empty">No audit records yet.</div>`}</div>`;
+}
+
+/* ---------- Forms (modals) ---------- */
+function newCustomer(){modal("New customer",`<div class="field"><label>Name</label><input id="cn"></div><div class="grid2">
+  <div class="field"><label>Email</label><input id="ce"></div><div class="field"><label>Phone</label><input id="cp"></div></div>`,
+  async()=>{const c=await api("/customers",{method:"POST",body:JSON.stringify({name:$("cn").value,email:$("ce").value||null,phone:$("cp").value||null})});
+    cache.customers.push(c);toast("Customer created","ok");route();});}
+function newSupplier(){modal("New supplier",`<div class="field"><label>Name</label><input id="sn"></div>
+  <div class="field"><label>Type</label><select id="st"><option>AIRLINE</option><option>HOTEL</option><option>TRANSPORT</option><option>OTA</option><option>OTHER</option></select></div>`,
+  async()=>{const s=await api("/suppliers",{method:"POST",body:JSON.stringify({name:$("sn").value,supplier_type:$("st").value})});
+    cache.suppliers.push(s);toast("Supplier created","ok");route();});}
+function newTrip(){
+  if(!cache.customers.length){toast("Create a customer first","bad");return newCustomer();}
+  modal("New trip",`<div class="field"><label>Customer</label><select id="tc">${cache.customers.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("")}</select></div>
+    <div class="grid2"><div class="field"><label>Trip reference</label><input id="tr" value="HT-${Date.now()%100000}"></div>
+    <div class="field"><label>Currency</label><input id="tcur" value="INR"></div></div>`,
+    async()=>{await api("/trips",{method:"POST",body:JSON.stringify({reference:$("tr").value,customer_id:$("tc").value,currency:$("tcur").value})});toast("Trip created","ok");route();});}
+function addBooking(tripId){
+  if(!cache.suppliers.length){toast("Create a supplier first","bad");return newSupplier();}
+  modal("Add booking",`<div class="field"><label>Supplier</label><select id="bs">${cache.suppliers.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")}</select></div>
+    <div class="grid2"><div class="field"><label>Booking reference</label><input id="br" value="PNR-${Date.now()%100000}"></div>
+    <div class="field"><label>Service</label><select id="bsv"><option>FLIGHT</option><option>HOTEL</option><option>CAB</option><option>BUS</option><option>OTHER</option></select></div></div>
+    <div class="field"><label>Original amount</label><input id="bamt" value="10000.00"></div>`,
+    async()=>{await api(`/trips/${tripId}/bookings`,{method:"POST",body:JSON.stringify({supplier_id:$("bs").value,booking_reference:$("br").value,service_type:$("bsv").value,original_amount:$("bamt").value})});
+      toast("Booking added","ok");closeLayer();openTrip(tripId);});}
+function openCaseFromBooking(bookingId){
+  modal("Open refund case",`<div class="sub" style="margin-bottom:10px">The ORIGINAL amount is taken from the booking. Add any cancellation deductions.</div>
+    <div class="field"><label>Cancellation penalty</label><input id="pen" value="2000.00"></div>
+    <div class="field"><label>Refundable tax (credited back)</label><input id="tax" value="0.00"></div>`,
+    async()=>{const ded=[];if(Number($("pen").value)>0)ded.push({kind:"CANCELLATION_DEDUCTION",label:"Cancellation penalty",amount:$("pen").value,evidence_ref:"manual"});
+      if(Number($("tax").value)>0)ded.push({kind:"REFUNDABLE_TAX",label:"Refundable tax",amount:$("tax").value,evidence_ref:"manual"});
+      const c=await api("/refund-cases",{method:"POST",body:JSON.stringify({booking_id:bookingId,deductions:ded})});toast("Refund case opened","ok");closeLayer();openCase(c.id);},"Open case");}
+function postRefund(caseId,side){
+  modal(`Record ${side} refund`,`<div class="field"><label>Amount</label><input id="ramt" value="5000.00"></div>
+    <div class="grid2"><div class="field"><label>Evidence ref</label><input id="rev" value="bank:stmt-1"></div>
+    <div class="field"><label>External ref (txn id)</label><input id="rext" value="TXN-${Date.now()%100000}"></div></div>
+    <div class="sub">Posts an immutable ledger entry. Duplicate external refs are rejected.</div>`,
+    async()=>{await api(`/refund-cases/${caseId}/${side}-refund`,{method:"POST",body:JSON.stringify({amount:$("ramt").value,evidence_ref:$("rev").value,external_ref:$("rext").value})});
+      toast(`${pretty(side)} refund recorded`,"ok");closeLayer();openCase(caseId);},"Record");}
+
+/* ---------- Layer (drawer/modal) ---------- */
+function drawer(title,bodyHTML){
+  $("layer").innerHTML=`<div class="overlay" onclick="if(event.target===this)closeLayer()"><div class="drawer">
+    <div class="row" style="margin-bottom:6px"><h3 style="margin:0;font-size:16px">${title}</h3><button class="btn ghost sm" onclick="closeLayer()">Close</button></div>
+    ${bodyHTML}</div></div>`;
+}
+function modal(title,bodyHTML,onSubmit,submitLabel="Create"){
+  $("layer").innerHTML=`<div class="overlay" onclick="if(event.target===this)closeLayer()"><div class="modal">
+    <div class="mh">${title}</div><div class="mb" id="modalBody">${bodyHTML}</div>
+    <div class="mf"><button class="btn ghost" onclick="closeLayer()">Cancel</button><button class="btn" id="modalOk">${submitLabel}</button></div></div></div>`;
+  $("modalOk").onclick=async()=>{const b=$("modalOk");b.disabled=true;b.textContent="Working…";
+    try{await onSubmit();closeLayer();}catch(e){toast(e.message,"bad");b.disabled=false;b.textContent=submitLabel;}};
+}
+function closeLayer(){$("layer").innerHTML="";}
+
+/* ---------- Resume ---------- */
+if(token)boot().catch(()=>logout());
 </script>
 </body>
 </html>

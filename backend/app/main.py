@@ -18,6 +18,7 @@ from app.core.database import Base, get_engine
 from app.core.observability import ObservabilityMiddleware, metrics_response
 import app.models  # noqa: F401  -- registers all tables on Base.metadata
 from app.api.routes import (
+    audit,
     auth,
     calculations,
     dashboard,
@@ -60,6 +61,7 @@ app.include_router(dashboard.router, prefix=_V1)
 app.include_router(reconciliation.router, prefix=_V1)
 app.include_router(documents.router, prefix=_V1)
 app.include_router(investigations.router, prefix=_V1)
+app.include_router(audit.router, prefix=_V1)
 app.include_router(calculations.router, prefix=_V1)
 
 
