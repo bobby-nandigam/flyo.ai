@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>TravelRefund Intelligence</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+    --brand:#0b5fff; --brand-ink:#0a4fd6; --good:#0f9d58; --warn:#b7791f; --bad:#d64545;
+    --chip:#eef2ff; --shadow:0 1px 2px rgba(15,23,42,.06),0 8px 24px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+  a{color:var(--brand);text-decoration:none}
+  .hidden{display:none !important}
+  .mono{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+  /* ---------- Login ---------- */
+  .auth-wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
+  .auth-card{width:100%;max-width:400px;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;box-shadow:var(--shadow);padding:28px}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .brand .dot{width:28px;height:28px;border-radius:8px;background:var(--brand);
+    display:grid;place-items:center;color:#fff;font-weight:700}
+  .brand h1{font-size:16px;margin:0;letter-spacing:-.2px}
+  .tag{color:var(--muted);font-size:12px;margin:2px 0 22px}
+  label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:14px 0 6px}
+  input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-size:14px;background:#fff}
+  input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,95,255,.12)}
+  button.primary{width:100%;margin-top:20px;padding:11px;background:var(--brand);color:#fff;border:0;
+    border-radius:9px;font-weight:600;font-size:14px;cursor:pointer}
+  button.primary:hover{background:var(--brand-ink)}
+  button.primary:disabled{opacity:.6;cursor:default}
+  .err{background:#fef2f2;color:var(--bad);border:1px solid #f6d2d2;border-radius:8px;
+    padding:9px 11px;font-size:13px;margin-top:14px}
+  .hint{margin-top:18px;font-size:12px;color:var(--muted);border-top:1px dashed var(--line);padding-top:14px}
+  .hint code{background:var(--chip);padding:2px 6px;border-radius:5px;color:var(--brand-ink)}
+
+  /* ---------- App shell ---------- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;background:var(--panel);
+    border-bottom:1px solid var(--line);padding:12px 22px;position:sticky;top:0;z-index:5}
+  .topbar .who{font-size:13px;color:var(--muted)}
+  .topbar .who b{color:var(--ink)}
+  .ghost{background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 12px;
+    font-size:13px;cursor:pointer;color:var(--ink)}
+  .ghost:hover{background:#f8fafc}
+  main{max-width:1120px;margin:0 auto;padding:22px 22px 60px}
+  h2.section{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);
+    margin:28px 0 12px;font-weight:700}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 16px;box-shadow:var(--shadow)}
+  .kpi .k{font-size:12px;color:var(--muted);font-weight:600}
+  .kpi .v{font-size:22px;font-weight:700;margin-top:8px;letter-spacing:-.4px}
+  .kpi .v small{font-size:13px;color:var(--muted);font-weight:600}
+  .kpi.accent-out .v{color:var(--bad)}
+  .kpi.accent-good .v{color:var(--good)}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:11px 16px;font-size:13px;border-bottom:1px solid var(--line)}
+  th{color:var(--muted);font-weight:600;background:#fbfcfe;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+  tr:last-child td{border-bottom:0}
+  td.num{text-align:right}
+  .badge{display:inline-block;padding:3px 9px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.02em}
+  .b-expected{background:#eef2ff;color:#3949ab}
+  .b-progress{background:#fff6e6;color:#b7791f}
+  .b-received{background:#e9f7ef;color:#0f9d58}
+  .b-done{background:#e9f7ef;color:#0f9d58}
+  .b-review{background:#fdeaea;color:#d64545}
+  .link-btn{background:none;border:0;color:var(--brand);cursor:pointer;font-size:13px;padding:0;font-weight:600}
+  .empty{padding:30px;text-align:center;color:var(--muted)}
+  .sim{font-size:11px;color:var(--muted)}
+
+  /* ---------- Drawer ---------- */
+  .drawer-bg{position:fixed;inset:0;background:rgba(15,23,42,.35);display:grid;place-items:end stretch;z-index:20}
+  .drawer{width:min(520px,100%);height:100%;background:#fff;margin-left:auto;padding:22px;overflow:auto;
+    box-shadow:-10px 0 40px rgba(15,23,42,.2)}
+  .drawer h3{margin:0 0 2px;font-size:16px}
+  .drawer .close{float:right}
+  .posbar{display:flex;gap:10px;margin:16px 0}
+  .posbar .p{flex:1;border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .posbar .p .k{font-size:11px;color:var(--muted);font-weight:600}
+  .posbar .p .v{font-size:16px;font-weight:700;margin-top:4px}
+
+  @media (max-width:820px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:520px){.kpis{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section id="login" class="auth-wrap">
+  <form class="auth-card" id="loginForm">
+    <div class="brand"><div class="dot">₹</div><h1>TravelRefund Intelligence</h1></div>
+    <div class="tag">Every rupee accounted for. Every refund traceable.</div>
+
+    <label for="email">Work email</label>
+    <input id="email" type="email" autocomplete="username" value="demo-owner@flyo.test" required />
+
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="current-password" value="demopassword1" required />
+
+    <button class="primary" type="submit" id="loginBtn">Sign in</button>
+    <div id="loginErr" class="err hidden"></div>
+
+    <div class="hint">
+      Demo organisation is pre-filled. Credentials:
+      <code>demo-owner@flyo.test</code> / <code>demopassword1</code>.<br/>
+      No real airline or payment systems are touched — all data is simulated.
+    </div>
+  </form>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+  <div class="topbar">
+    <div class="brand"><div class="dot">₹</div><h1>TravelRefund Intelligence</h1></div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="who">Signed in as <b id="whoEmail"></b> · <span id="whoRole"></span></div>
+      <button class="ghost" id="logoutBtn">Sign out</button>
+    </div>
+  </div>
+
+  <main>
+    <h2 class="section">Financial overview</h2>
+    <div class="kpis" id="kpis"></div>
+
+    <h2 class="section">Refund cases</h2>
+    <div class="card"><div id="casesBox"><div class="empty">Loading…</div></div></div>
+
+    <h2 class="section">Trips</h2>
+    <div class="card"><div id="tripsBox"><div class="empty">Loading…</div></div></div>
+  </main>
+</div>
+
+<div id="drawer"></div>
+
+<script>
+const API = "/api/v1";
+let token = localStorage.getItem("flyo_token") || null;
+
+const $ = (id) => document.getElementById(id);
+const fmtINR = (s) => "₹" + Number(s).toLocaleString("en-IN", {minimumFractionDigits:2, maximumFractionDigits:2});
+
+async function api(path, opts={}){
+  const headers = Object.assign({"Content-Type":"application/json"}, opts.headers||{});
+  if(token) headers["Authorization"] = "Bearer " + token;
+  const res = await fetch(API+path, Object.assign({}, opts, {headers}));
+  if(res.status === 401){ logout(); throw new Error("Session expired"); }
+  if(!res.ok){ throw new Error((await res.json().catch(()=>({}))).detail || res.statusText); }
+  return res.status === 204 ? null : res.json();
+}
+
+/* ---------- Auth ---------- */
+$("loginForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const btn = $("loginBtn"); btn.disabled = true; btn.textContent = "Signing in…";
+  $("loginErr").classList.add("hidden");
+  try{
+    const data = await (await fetch(API+"/auth/login", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({email:$("email").value, password:$("password").value})
+    })).json();
+    if(!data.access_token) throw new Error(data.detail || "Invalid credentials");
+    token = data.access_token; localStorage.setItem("flyo_token", token);
+    await boot();
+  }catch(err){
+    $("loginErr").textContent = err.message || "Login failed";
+    $("loginErr").classList.remove("hidden");
+  }finally{ btn.disabled=false; btn.textContent="Sign in"; }
+});
+
+$("logoutBtn").addEventListener("click", logout);
+function logout(){
+  token=null; localStorage.removeItem("flyo_token");
+  $("app").classList.add("hidden"); $("login").classList.remove("hidden");
+}
+
+/* ---------- Boot the app ---------- */
+const STATUS_CLASS = (s)=>{
+  if(s==="REFUND_EXPECTED") return "b-expected";
+  if(s==="CUSTOMER_REFUNDED"||s==="SUPPLIER_REFUND_RECEIVED") return "b-received";
+  if(s==="DISPUTED"||s==="MANUAL_REVIEW_REQUIRED"||s==="REJECTED") return "b-review";
+  return "b-progress";
+};
+
+async function boot(){
+  $("login").classList.add("hidden"); $("app").classList.remove("hidden");
+  try{
+    const me = await api("/auth/me");
+    $("whoEmail").textContent = me.email; $("whoRole").textContent = me.role;
+
+    const summary = await api("/dashboard/summary");
+    renderKpis(summary);
+
+    const cases = await api("/refund-cases");
+    const withPos = await Promise.all(cases.map(async c=>{
+      const pos = await api(`/refund-cases/${c.id}/settlement?side=supplier`).catch(()=>null);
+      return {...c, pos};
+    }));
+    renderCases(withPos);
+
+    const trips = await api("/trips");
+    renderTrips(trips);
+  }catch(err){ console.error(err); }
+}
+
+function renderKpis(s){
+  const cards = [
+    {k:"Trips", v:s.total_trips, raw:true},
+    {k:"Original booking value", v:fmtINR(s.total_original_value)},
+    {k:"Expected supplier refunds", v:fmtINR(s.total_expected_supplier_refund)},
+    {k:"Supplier refunds received", v:fmtINR(s.total_supplier_refund_received), cls:"accent-good"},
+    {k:"Customer refunded", v:fmtINR(s.total_customer_refunded)},
+    {k:"Outstanding from suppliers", v:fmtINR(s.total_outstanding), cls:"accent-out"},
+    {k:"Refund cases", v:s.total_refund_cases, raw:true},
+    {k:"Cases with balance due", v:s.open_outstanding_cases, raw:true},
+  ];
+  $("kpis").innerHTML = cards.map(c=>`
+    <div class="kpi ${c.cls||""}">
+      <div class="k">${c.k}</div>
+      <div class="v mono">${c.v}</div>
+    </div>`).join("");
+}
+
+function renderCases(cases){
+  if(!cases.length){ $("casesBox").innerHTML = `<div class="empty">No refund cases yet.</div>`; return; }
+  $("casesBox").innerHTML = `
+    <table><thead><tr>
+      <th>Case</th><th>Status</th><th class="num">Expected</th>
+      <th class="num">Received</th><th class="num">Outstanding</th><th></th>
+    </tr></thead><tbody>
+    ${cases.map(c=>{
+      const rec = c.pos ? c.pos.received : "0.00";
+      const out = c.pos ? c.pos.outstanding : c.expected_supplier_refund;
+      const outCls = Number(out)>0 ? "style='color:var(--bad);font-weight:700'" : "";
+      return `<tr>
+        <td class="mono">${c.id.slice(0,8)}</td>
+        <td><span class="badge ${STATUS_CLASS(c.status)}">${c.status.replaceAll("_"," ")}</span></td>
+        <td class="num mono">${fmtINR(c.expected_supplier_refund)}</td>
+        <td class="num mono">${fmtINR(rec)}</td>
+        <td class="num mono" ${outCls}>${fmtINR(out)}</td>
+        <td class="num"><button class="link-btn" onclick='openCase(${JSON.stringify(c.id)})'>View</button></td>
+      </tr>`;
+    }).join("")}
+    </tbody></table>`;
+}
+
+function renderTrips(trips){
+  if(!trips.length){ $("tripsBox").innerHTML = `<div class="empty">No trips yet.</div>`; return; }
+  $("tripsBox").innerHTML = `
+    <table><thead><tr><th>Reference</th><th>Currency</th><th>Status</th><th>Trip ID</th></tr></thead>
+    <tbody>${trips.map(t=>`<tr>
+      <td><b>${t.reference}</b></td><td>${t.currency}</td>
+      <td><span class="badge b-progress">${t.status}</span></td>
+      <td class="mono sim">${t.id.slice(0,8)}</td>
+    </tr>`).join("")}</tbody></table>`;
+}
+
+/* ---------- Case drawer (ledger + settlement) ---------- */
+async function openCase(id){
+  const [c, ledger, sup, cust] = await Promise.all([
+    api(`/refund-cases/${id}`),
+    api(`/refund-cases/${id}/ledger`),
+    api(`/refund-cases/${id}/settlement?side=supplier`).catch(()=>null),
+    api(`/refund-cases/${id}/settlement?side=customer`).catch(()=>null),
+  ]);
+  const lines = (c.supplier_breakdown?.lines)||[];
+  $("drawer").innerHTML = `
+    <div class="drawer-bg" onclick="if(event.target===this)closeDrawer()">
+      <div class="drawer">
+        <button class="ghost close" onclick="closeDrawer()">Close</button>
+        <h3>Refund case</h3>
+        <div class="sim mono">${c.id}</div>
+        <div style="margin-top:8px"><span class="badge ${STATUS_CLASS(c.status)}">${c.status.replaceAll("_"," ")}</span></div>
+
+        <div class="posbar">
+          <div class="p"><div class="k">Expected (supplier)</div><div class="v mono">${fmtINR(sup?sup.expected:c.expected_supplier_refund)}</div></div>
+          <div class="p"><div class="k">Received</div><div class="v mono">${fmtINR(sup?sup.received:"0")}</div></div>
+          <div class="p"><div class="k">Outstanding</div><div class="v mono" style="${Number(sup?sup.outstanding:0)>0?'color:var(--bad)':''}">${fmtINR(sup?sup.outstanding:"0")}</div></div>
+        </div>
+
+        <h2 class="section" style="margin-top:8px">Expected refund breakdown</h2>
+        <div class="card"><table><tbody>
+          ${lines.map(l=>`<tr><td>${l.label}<div class="sim">${l.kind} · ${l.evidence_ref||"—"}</div></td>
+            <td class="num mono">${fmtINR(l.signed)}</td></tr>`).join("")}
+          <tr><td><b>Expected supplier refund</b></td><td class="num mono"><b>${fmtINR(c.supplier_breakdown?.total||c.expected_supplier_refund)}</b></td></tr>
+        </tbody></table></div>
+
+        <h2 class="section">Ledger (append-only)</h2>
+        <div class="card">${ledger.length? `<table><thead><tr><th>Account</th><th>Type</th><th class="num">Amount</th><th>Evidence</th></tr></thead>
+          <tbody>${ledger.map(e=>`<tr>
+            <td><span class="badge ${e.account==='SUPPLIER'?'b-expected':'b-received'}">${e.account}</span></td>
+            <td class="sim">${e.entry_type.replaceAll("_"," ")}</td>
+            <td class="num mono">${fmtINR(e.amount)}</td>
+            <td class="sim mono">${e.evidence_ref}</td></tr>`).join("")}</tbody></table>`
+          : `<div class="empty">No ledger entries — no supplier money received yet.</div>`}</div>
+      </div>
+    </div>`;
+}
+function closeDrawer(){ $("drawer").innerHTML=""; }
+
+/* ---------- Resume session ---------- */
+if(token) boot();
+</script>
+</body>
+</html>

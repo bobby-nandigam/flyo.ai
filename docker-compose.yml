@@ -1,0 +1,45 @@
+# Local development environment for TravelRefund Intelligence.
+# Frontend service is added when the Next.js app lands (Phase 6).
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: flyo
+      POSTGRES_PASSWORD: flyo
+      POSTGRES_DB: flyo
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U flyo"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://flyo:flyo@db:5432/flyo
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
