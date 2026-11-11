@@ -4,6 +4,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import jwt
+from typing import Optional
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
@@ -12,7 +14,9 @@ from app.core.database import get_db
 from app.core.security import decode_token
 from app.models.tenant import Role, User
 
-_bearer = HTTPBearer(auto_error=True)
+# auto_error=False so we return a consistent 401 for a missing header on every
+# FastAPI version (the built-in error is 403 on some versions, 401 on others).
+_bearer = HTTPBearer(auto_error=False)
 
 
 @dataclass(frozen=True)
@@ -23,9 +27,15 @@ class Principal:
 
 
 def get_current_principal(
-    creds: HTTPAuthorizationCredentials = Depends(_bearer),
+    creds: Optional[HTTPAuthorizationCredentials] = Depends(_bearer),
     db: Session = Depends(get_db),
 ) -> Principal:
+    if creds is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     try:
         payload = decode_token(creds.credentials, expected_type="access")
     except jwt.PyJWTError as exc:
