@@ -275,34 +275,50 @@ const STATUS_BADGE=s=>{
 const SEV_BADGE=s=>s==="HIGH"?"bg-red":s==="MEDIUM"?"bg-amber":"bg-blue";
 const pretty=s=>String(s).replaceAll("_"," ").toLowerCase().replace(/^\w/,c=>c.toUpperCase());
 
-/* ---------- Dashboard ---------- */
+/* ---------- Dashboard (progressive & resilient) ---------- */
+function kpiTile(k,v,sub,cls){return `<div class="tile ${cls||""}"><div class="k">${k}</div><div class="v mono">${v}</div>${sub?`<div class="sub">${sub}</div>`:""}</div>`;}
 async function viewDashboard(){
-  const [s,cases,discs]=await Promise.all([api("/dashboard/summary"),api("/refund-cases"),api("/reconciliation/discrepancies?status=OPEN")]);
-  const tiles=[
-    {k:"Cancelled trips",v:s.total_trips,sub:`${s.total_bookings} bookings`},
-    {k:"Original booking value",v:fmt(s.total_original_value)},
-    {k:"Expected supplier refunds",v:fmt(s.total_expected_supplier_refund)},
-    {k:"Supplier refunds received",v:fmt(s.total_supplier_refund_received),cls:"green"},
-    {k:"Customer refunded",v:fmt(s.total_customer_refunded)},
-    {k:"Outstanding from suppliers",v:fmt(s.total_outstanding),cls:"red"},
-    {k:"Refund cases",v:s.total_refund_cases,sub:`${s.open_outstanding_cases} with balance due`},
-    {k:"Open discrepancies",v:(s.open_discrepancies??0),cls:(s.open_discrepancies>0?"red":"")},
-  ];
-  const withPos=await Promise.all(cases.map(async c=>({...c,pos:await api(`/refund-cases/${c.id}/settlement?side=supplier`).catch(()=>null)})));
-  const outstanding=withPos.filter(c=>c.pos&&Number(c.pos.outstanding)>0).sort((a,b)=>Number(b.pos.outstanding)-Number(a.pos.outstanding));
+  // Render the layout immediately so the page is never blank; fill each section as data arrives.
   $("view").innerHTML=`
-    <div class="kpis">${tiles.map(t=>`<div class="tile ${t.cls||""}"><div class="k">${t.k}</div><div class="v mono">${t.v}</div>${t.sub?`<div class="sub">${t.sub}</div>`:""}</div>`).join("")}</div>
+    <div class="kpis" id="kpis">${Array(8).fill('<div class="tile"><div class="k">—</div><div class="v mono">…</div></div>').join("")}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px">
-      <div class="card"><div class="hd"><h4>Outstanding supplier refunds</h4><a href="#/cases" class="linkbtn">All cases</a></div>
-        ${outstanding.length?`<table><thead><tr><th>Case</th><th class="num">Expected</th><th class="num">Outstanding</th></tr></thead>
-        <tbody>${outstanding.slice(0,6).map(c=>`<tr style="cursor:pointer" onclick='openCase("${c.id}")'>
-          <td class="mono">${c.id.slice(0,8)}</td><td class="num mono">${fmt(c.expected_supplier_refund)}</td>
-          <td class="num mono neg">${fmt(c.pos.outstanding)}</td></tr>`).join("")}</tbody></table>`:`<div class="empty">No outstanding refunds. 🎉</div>`}</div>
-      <div class="card"><div class="hd"><h4>Open discrepancies</h4><a href="#/discrepancies" class="linkbtn">Queue</a></div>
-        ${discs.length?`<table><thead><tr><th>Type</th><th>Severity</th><th class="num">Amount</th></tr></thead>
-        <tbody>${discs.slice(0,6).map(d=>`<tr><td>${pretty(d.kind)}</td><td><span class="badge ${SEV_BADGE(d.severity)}"><span class="dot"></span>${d.severity}</span></td>
-          <td class="num mono">${fmt(d.observed_amount||d.expected_amount||d.difference)}</td></tr>`).join("")}</tbody></table>`:`<div class="empty">No open discrepancies.</div>`}</div>
+      <div class="card"><div class="hd"><h4>Outstanding supplier refunds</h4><a href="#/cases" class="linkbtn">All cases</a></div><div id="dashOut"><div class="empty">Loading…</div></div></div>
+      <div class="card"><div class="hd"><h4>Open discrepancies</h4><a href="#/discrepancies" class="linkbtn">Queue</a></div><div id="dashDisc"><div class="empty">Loading…</div></div></div>
     </div>`;
+
+  // KPIs — independent, render as soon as the summary returns.
+  api("/dashboard/summary").then(s=>{
+    $("kpis").innerHTML=[
+      kpiTile("Cancelled trips",s.total_trips,`${s.total_bookings} bookings`),
+      kpiTile("Original booking value",fmt(s.total_original_value)),
+      kpiTile("Expected supplier refunds",fmt(s.total_expected_supplier_refund)),
+      kpiTile("Supplier refunds received",fmt(s.total_supplier_refund_received),"","green"),
+      kpiTile("Customer refunded",fmt(s.total_customer_refunded)),
+      kpiTile("Outstanding from suppliers",fmt(s.total_outstanding),"","red"),
+      kpiTile("Refund cases",s.total_refund_cases,`${s.open_outstanding_cases} with balance due`),
+      kpiTile("Open discrepancies",(s.open_discrepancies??0),"",(s.open_discrepancies>0?"red":"")),
+    ].join("");
+  }).catch(e=>{$("kpis").innerHTML=`<div class="tile" style="grid-column:1/-1"><div class="sub">Couldn't load summary: ${esc(e.message)}</div></div>`;});
+
+  // Discrepancies panel — independent.
+  api("/reconciliation/discrepancies?status=OPEN").then(discs=>{
+    $("dashDisc").innerHTML=discs.length?`<table><thead><tr><th>Type</th><th>Severity</th><th class="num">Amount</th></tr></thead>
+      <tbody>${discs.slice(0,6).map(d=>`<tr><td>${pretty(d.kind)}</td><td><span class="badge ${SEV_BADGE(d.severity)}"><span class="dot"></span>${d.severity}</span></td>
+      <td class="num mono">${fmt(d.observed_amount||d.expected_amount||d.difference)}</td></tr>`).join("")}</tbody></table>`:`<div class="empty">No open discrepancies.</div>`;
+  }).catch(()=>{$("dashDisc").innerHTML=`<div class="empty">Couldn't load discrepancies.</div>`;});
+
+  // Outstanding cases — fetch cases, then settlements best-effort (allSettled).
+  try{
+    const cases=await api("/refund-cases");
+    const settled=await Promise.allSettled(cases.map(c=>api(`/refund-cases/${c.id}/settlement?side=supplier`)));
+    const withPos=cases.map((c,i)=>({...c,pos:settled[i].status==="fulfilled"?settled[i].value:null}));
+    const outstanding=withPos.filter(c=>c.pos&&Number(c.pos.outstanding)>0).sort((a,b)=>Number(b.pos.outstanding)-Number(a.pos.outstanding));
+    $("dashOut").innerHTML=outstanding.length?`<table><thead><tr><th>Case</th><th class="num">Expected</th><th class="num">Outstanding</th></tr></thead>
+      <tbody>${outstanding.slice(0,6).map(c=>`<tr style="cursor:pointer" onclick='openCase("${c.id}")'>
+      <td class="mono">${c.id.slice(0,8)}</td><td class="num mono">${fmt(c.expected_supplier_refund)}</td>
+      <td class="num mono neg">${fmt(c.pos.outstanding)}</td></tr>`).join("")}</tbody></table>`
+      :`<div class="empty">${cases.length?"No outstanding refunds.":"No refund cases yet."}</div>`;
+  }catch(e){$("dashOut").innerHTML=`<div class="empty">Couldn't load cases.</div>`;}
 }
 
 /* ---------- Trips ---------- */

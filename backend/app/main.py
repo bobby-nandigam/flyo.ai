@@ -77,5 +77,12 @@ def metrics() -> PlainTextResponse:
 
 @app.get("/", include_in_schema=False)
 def web_app() -> FileResponse:
-    """Serve the single-page login + dashboard UI."""
-    return FileResponse(_WEB_DIR / "index.html")
+    """Serve the single-page console UI.
+
+    ``no-store`` keeps browsers/CDN from pinning a stale build after a redeploy,
+    so users always load the current UI.
+    """
+    return FileResponse(
+        _WEB_DIR / "index.html",
+        headers={"Cache-Control": "no-store, must-revalidate"},
+    )
