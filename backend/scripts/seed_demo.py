@@ -20,6 +20,8 @@ from app.domain.refund_status import RefundStatus
 from app.models.trip import ServiceType, SupplierType
 from app.services import (
     auth_service,
+    document_service,
+    investigation_service,
     reconciliation_service,
     refund_service,
     trip_service,
@@ -158,6 +160,35 @@ def seed() -> None:
                 {"external_ref": "UPI-MYSTERY-7", "amount": "3200.00", "value_date": "2026-03-07"},  # unexplained
             ],
         )
+
+        # ================= Scenario 5: Document intelligence + policy =============
+        document_service.ingest_text_document(
+            db, t, u, trip_id=trip1.id, doc_type="CANCELLATION",
+            filename="indigo-cancel-AAA111.txt",
+            content_text=(
+                "IndiGo - Cancellation Confirmation\n"
+                "PNR: 6E-PNR-AAA111\n"
+                "Original fare: INR 12,500.00\n"
+                "Cancellation charge: Rs. 3,000.00\n"
+                "Refund amount payable: Rs. 9,500.00\n"
+                "Cancellation date: 2026-03-01\n"
+            ),
+        )
+        document_service.create_policy(
+            db, t, u, version="indigo-domestic-v3", currency="INR",
+            tiers=[
+                {"min_days_before": 15, "basis": "FIXED", "fixed_amount": "2000", "label": ">=15 days"},
+                {"min_days_before": 2, "basis": "GREATER_OF", "fixed_amount": "3000",
+                 "percent": "25", "label": "2-14 days"},
+                {"min_days_before": 0, "basis": "PERCENT", "percent": "100", "label": "<2 days / no-show"},
+            ],
+            non_refundable_fixed="250", non_refundable_label="Convenience fee",
+        )
+
+        # ================= Scenario 6: Investigate the outstanding cases ===========
+        for cid in (case2.id, case3.id):
+            investigation_service.run_investigation(db, t, u, case_id=cid)
+        investigation_service.draft_supplier_followup(db, t, u, case_id=case3.id)
 
         print("Seed complete.")
         print(f"  Tenant:   {tenant.name}  ({tenant.id})")

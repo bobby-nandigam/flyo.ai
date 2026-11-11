@@ -354,8 +354,45 @@ async function openCase(id){
             <td class="num mono">${fmtINR(e.amount)}</td>
             <td class="sim mono">${e.evidence_ref}</td></tr>`).join("")}</tbody></table>`
           : `<div class="empty">No ledger entries — no supplier money received yet.</div>`}</div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-top:22px">
+          <h2 class="section" style="margin:0">AI investigation</h2>
+          <div style="display:flex;gap:8px">
+            <button class="ghost" onclick='runInvestigation(${JSON.stringify(id)})'>Investigate</button>
+            <button class="ghost" onclick='draftFollowup(${JSON.stringify(id)})'>Draft follow-up</button>
+          </div>
+        </div>
+        <div id="investBox" class="card" style="padding:14px"><div class="sim">Run an evidence-grounded investigation to explain gaps and get recommended actions.</div></div>
       </div>
     </div>`;
+}
+
+async function runInvestigation(id){
+  $("investBox").innerHTML = `<div class="sim">Investigating…</div>`;
+  const r = await api(`/refund-cases/${id}/investigate`, {method:"POST", body:"{}"}).catch(e=>null);
+  if(!r){ $("investBox").innerHTML = `<div class="sim">Could not run investigation.</div>`; return; }
+  $("investBox").innerHTML = `
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:8px">
+      <span class="badge ${SEV_CLASS(r.severity)}">${r.severity}</span>
+      <span class="sim">engine: ${r.engine}${r.evidence_complete?" · evidence complete":""}</span>
+    </div>
+    <div style="margin-bottom:12px">${r.summary}</div>
+    ${r.findings.length?`<b class="sim">Findings</b><ul style="margin:6px 0 12px;padding-left:18px">
+      ${r.findings.map(f=>`<li><b>${f.code.replaceAll("_"," ")}</b> — ${f.message} <span class="sim">${(f.evidence_refs||[]).join(", ")}</span></li>`).join("")}</ul>`:""}
+    ${r.recommended_actions.length?`<b class="sim">Recommended actions</b><ol style="margin:6px 0 0;padding-left:18px">
+      ${r.recommended_actions.map(a=>`<li>${a}</li>`).join("")}</ol>`:""}`;
+}
+
+async function draftFollowup(id){
+  const r = await api(`/refund-cases/${id}/followup-draft`, {method:"POST", body:"{}"}).catch(e=>null);
+  if(!r){ return; }
+  $("investBox").innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <b class="sim">Supplier follow-up draft</b>
+      <span class="badge b-progress">${r.status}</span>
+    </div>
+    <pre style="white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,monospace;background:#fbfcfe;border:1px solid var(--line);border-radius:8px;padding:12px;margin:0">${r.body.replace(/</g,"&lt;")}</pre>
+    <div class="sim" style="margin-top:8px">Draft only — review and send through your own channel; nothing is transmitted automatically.</div>`;
 }
 function closeDrawer(){ $("drawer").innerHTML=""; }
 

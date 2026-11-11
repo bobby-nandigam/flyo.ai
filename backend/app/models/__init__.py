@@ -15,6 +15,8 @@ from app.models.reconciliation import (
     ReconciliationRecord,
     Discrepancy,
 )
+from app.models.document import Document, DocumentExtraction, CancellationPolicyRow
+from app.models.investigation import InvestigationReport, SupplierCommunication
 
 __all__ = [
     "Tenant",
@@ -33,4 +35,9 @@ __all__ = [
     "ReconciliationBatch",
     "ReconciliationRecord",
     "Discrepancy",
+    "Document",
+    "DocumentExtraction",
+    "CancellationPolicyRow",
+    "InvestigationReport",
+    "SupplierCommunication",
 ]

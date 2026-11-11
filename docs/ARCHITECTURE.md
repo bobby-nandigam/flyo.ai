@@ -132,10 +132,10 @@ as immutable rows (append-only; no `UPDATE`/`DELETE` grant for the app role).
 | 1 | Architecture, domain model, financial invariants | ✅ **done** |
 | 2 | Auth/JWT + RBAC, tenants, trips/bookings, refund cases, ledger persistence, Alembic, demo seed | ✅ **done** |
 | 3 | CSV/JSON import, normalisation, deterministic matching + confidence, discrepancy detection & queue | ✅ **done** |
-| 4 | Document intake, OCR, extraction, human verification, policy engine | ⬜ planned |
-| 5 | AI investigation: retrieval, tool-calling, evidence-grounded answers, evals | ⬜ planned |
-| 6 | Next.js enterprise UI (15 screens) | ⬜ planned |
-| 7 | Security/perf/integration testing, observability, deploy, backup/restore | ⬜ planned |
+| 4 | Document intake (text + pluggable OCR), deterministic extraction, human verification, policy engine | ✅ **done** |
+| 5 | Evidence-grounded investigation agent, supplier follow-up drafts (optional LLM narration) | ✅ **done** |
+| 6 | Enterprise operations console (served SPA: dashboard, cases, reconciliation, investigation) | ✅ **done** |
+| 7 | Observability (metrics/logs/headers), CI, benchmark, security & deployment docs, backup | ✅ **done** |
 
 **What runs today** (57 passing tests): a multi-tenant FastAPI backend with
 - `POST /api/v1/auth/{register,login,refresh}` + `GET /auth/me` — JWT access/refresh, PBKDF2 passwords.

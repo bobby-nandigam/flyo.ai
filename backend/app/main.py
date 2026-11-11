@@ -11,15 +11,18 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, PlainTextResponse
 
 from app.core.config import get_settings
 from app.core.database import Base, get_engine
+from app.core.observability import ObservabilityMiddleware, metrics_response
 import app.models  # noqa: F401  -- registers all tables on Base.metadata
 from app.api.routes import (
     auth,
     calculations,
     dashboard,
+    documents,
+    investigations,
     reconciliation,
     refund_cases,
     trips,
@@ -47,18 +50,27 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+app.add_middleware(ObservabilityMiddleware)
+
 _V1 = "/api/v1"
 app.include_router(auth.router, prefix=_V1)
 app.include_router(trips.router, prefix=_V1)
 app.include_router(refund_cases.router, prefix=_V1)
 app.include_router(dashboard.router, prefix=_V1)
 app.include_router(reconciliation.router, prefix=_V1)
+app.include_router(documents.router, prefix=_V1)
+app.include_router(investigations.router, prefix=_V1)
 app.include_router(calculations.router, prefix=_V1)
 
 
 @app.get("/health", tags=["system"])
 def health() -> dict:
     return {"status": "ok", "service": settings.app_name, "environment": settings.environment}
+
+
+@app.get("/metrics", tags=["system"], include_in_schema=False)
+def metrics() -> PlainTextResponse:
+    return metrics_response()
 
 
 @app.get("/", include_in_schema=False)
